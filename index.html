@@ -642,9 +642,9 @@
       const p = players[currentPlayerIndex];
 
       if (!p.completedSegmentThisTurn) {
-        if (p.segment === 1 && p.segmentProgress !== 40) p.segmentProgress = 0;
-        if (p.segment === 2 && p.segmentProgress !== 60) p.segmentProgress = 0;
-        if (p.segment === 3 && p.segmentProgress < 100) p.segmentProgress = 0;
+        if (p.segment === 1 && p.segmentProgress !== 30) p.segmentProgress = 0;
+        if (p.segment === 2 && p.segmentProgress !== 51) p.segmentProgress = 0;
+        if (p.segment === 3 && p.segmentProgress < 75) p.segmentProgress = 0;
       }
 
       p.currentTurnDarts = [];
@@ -701,10 +701,10 @@
       const turnComplete = p.currentTurnDarts.length === 3 || p.completedSegmentThisTurn;
       btnAdvanceTurn.disabled = !turnComplete;
 
-      document.getElementById('seg-req-1').innerText = p.segment === 1 ? `Rem: ${40 - p.segmentProgress}` : `40 Pts`;
-      document.getElementById('seg-req-2').innerText = p.segment === 2 ? `Rem: ${60 - p.segmentProgress}` : `60 Pts`;
-      document.getElementById('seg-req-5').innerText = p.segment === 5 ? `Rem: ${170 - p.segmentProgress}` : `170 (6 Darts)`;
-      document.getElementById('seg-req-6').innerText = p.segment === 6 ? `Rem: ${201 - p.segmentProgress}` : `201 (9 Darts)`;
+      document.getElementById('seg-req-1').innerText = p.segment === 1 ? `Rem: ${30 - p.segmentProgress}` : `30 Pts`;
+      document.getElementById('seg-req-2').innerText = p.segment === 2 ? `Rem: ${51 - p.segmentProgress}` : `51 Pts`;
+      document.getElementById('seg-req-5').innerText = p.segment === 5 ? `Rem: ${130 - p.segmentProgress}` : `130 (6 Darts)`;
+      document.getElementById('seg-req-6').innerText = p.segment === 6 ? `Rem: ${170 - p.segmentProgress}` : `170 (9 Darts)`;
 
       for (let i = 1; i <= 6; i++) {
         const segEl = document.getElementById(`seg-${i}`);
@@ -744,11 +744,11 @@
     }
 
     function getProgString(p) {
-      if (p.segment === 1) return `Rem: ${40 - p.segmentProgress} pts`;
-      if (p.segment === 2) return `Rem: ${60 - p.segmentProgress} pts`;
+      if (p.segment === 1) return `Rem: ${30 - p.segmentProgress} pts`;
+      if (p.segment === 2) return `Rem: ${51 - p.segmentProgress} pts`;
       if (p.segment === 4) return `${p.segmentProgress}/3 same`;
-      if (p.segment === 5) return `Rem: ${170 - p.segmentProgress} (${6 - p.segmentDartsThrown} darts left)`;
-      if (p.segment === 6) return `Rem: ${201 - p.segmentProgress} (${9 - p.segmentDartsThrown} darts left)`;
+      if (p.segment === 5) return `Rem: ${130 - p.segmentProgress} (${6 - p.segmentDartsThrown} darts left)`;
+      if (p.segment === 6) return `Rem: ${170 - p.segmentProgress} (${9 - p.segmentDartsThrown} darts left)`;
       return `${p.segmentProgress} pts`;
     }
 
