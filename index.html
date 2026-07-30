@@ -266,7 +266,7 @@
 <body>
 
   <div class="container">
-    <h1>🏁 Race Track 1 Darts 🏁</h1>
+    <h1>🏁 Race Track #1 Darts 🏁</h1>
 
     <!-- SETUP CARD -->
     <div id="setup-card" class="card">
@@ -307,15 +307,15 @@
       <div class="track-container">
         <div class="track-segment" id="seg-1">
           <div class="seg-title">Seg 1</div>
-          <div class="seg-req" id="seg-req-1">40 Pts</div>
+          <div class="seg-req" id="seg-req-1">30 Pts</div>
         </div>
         <div class="track-segment" id="seg-2">
           <div class="seg-title">Seg 2</div>
-          <div class="seg-req" id="seg-req-2">60 Pts</div>
+          <div class="seg-req" id="seg-req-2">51 Pts</div>
         </div>
         <div class="track-segment" id="seg-3">
           <div class="seg-title">Seg 3</div>
-          <div class="seg-req" id="seg-req-3">100+ Pts</div>
+          <div class="seg-req" id="seg-req-3">75+ Pts</div>
         </div>
         <div class="track-segment" id="seg-4">
           <div class="seg-title">Seg 4</div>
@@ -323,11 +323,11 @@
         </div>
         <div class="track-segment" id="seg-5">
           <div class="seg-title">Seg 5</div>
-          <div class="seg-req" id="seg-req-5">170 (6 Darts)</div>
+          <div class="seg-req" id="seg-req-5">130 (6 Darts)</div>
         </div>
         <div class="track-segment" id="seg-6">
           <div class="seg-title">Seg 6</div>
-          <div class="seg-req" id="seg-req-6">201 (9 Darts)</div>
+          <div class="seg-req" id="seg-req-6">175 (9 Darts)</div>
         </div>
       </div>
 
@@ -548,30 +548,30 @@
     function processSegmentProgress(p, dart, score) {
       const seg = p.segment;
 
-      if (seg === 1) { // EXACT 40
+      if (seg === 1) { // EXACT 30
         if (dart.type === 'number') {
           p.segmentProgress += score;
-          if (p.segmentProgress === 40) {
+          if (p.segmentProgress === 30) {
             advanceSegment(p);
-          } else if (p.segmentProgress > 40) {
+          } else if (p.segmentProgress > 30) {
             p.segmentProgress = 0;
           }
         }
       } 
-      else if (seg === 2) { // EXACT 60
+      else if (seg === 2) { // EXACT 51
         if (dart.type === 'number') {
           p.segmentProgress += score;
-          if (p.segmentProgress === 60) {
+          if (p.segmentProgress === 51) {
             advanceSegment(p);
-          } else if (p.segmentProgress > 60) {
+          } else if (p.segmentProgress > 51) {
             p.segmentProgress = 0;
           }
         }
       } 
-      else if (seg === 3) { // 100+ Total in round
+      else if (seg === 3) { // 75+ Total in round
         if (dart.type === 'number') {
           p.segmentProgress += score;
-          if (p.segmentProgress >= 100) {
+          if (p.segmentProgress >= 75) {
             advanceSegment(p);
           }
         }
@@ -597,24 +597,24 @@
           p.segmentProgress = 0;
         }
       } 
-      else if (seg === 5) { // 170 EXACT in 6 Darts
+      else if (seg === 5) { // 130 EXACT in 6 Darts
         p.segmentDartsThrown += 1;
         if (dart.type === 'number') p.segmentProgress += score;
 
-        if (p.segmentProgress === 170) {
+        if (p.segmentProgress === 130) {
           advanceSegment(p);
-        } else if (p.segmentProgress > 170 || p.segmentDartsThrown >= 6) {
+        } else if (p.segmentProgress > 130 || p.segmentDartsThrown >= 6) {
           p.segmentProgress = 0;
           p.segmentDartsThrown = 0;
         }
       } 
-      else if (seg === 6) { // 201 EXACT in 9 Darts
+      else if (seg === 6) { // 175 EXACT in 9 Darts
         p.segmentDartsThrown += 1;
         if (dart.type === 'number') p.segmentProgress += score;
 
-        if (p.segmentProgress === 201) {
+        if (p.segmentProgress === 175) {
           advanceSegment(p);
-        } else if (p.segmentProgress > 201 || p.segmentDartsThrown >= 9) {
+        } else if (p.segmentProgress > 175 || p.segmentDartsThrown >= 9) {
           p.segmentProgress = 0;
           p.segmentDartsThrown = 0;
         }
@@ -642,9 +642,9 @@
       const p = players[currentPlayerIndex];
 
       if (!p.completedSegmentThisTurn) {
-        if (p.segment === 1 && p.segmentProgress !== 40) p.segmentProgress = 0;
-        if (p.segment === 2 && p.segmentProgress !== 60) p.segmentProgress = 0;
-        if (p.segment === 3 && p.segmentProgress < 100) p.segmentProgress = 0;
+        if (p.segment === 1 && p.segmentProgress !== 30) p.segmentProgress = 0;
+        if (p.segment === 2 && p.segmentProgress !== 51) p.segmentProgress = 0;
+        if (p.segment === 3 && p.segmentProgress < 75) p.segmentProgress = 0;
       }
 
       p.currentTurnDarts = [];
@@ -701,10 +701,11 @@
       const turnComplete = p.currentTurnDarts.length === 3 || p.completedSegmentThisTurn;
       btnAdvanceTurn.disabled = !turnComplete;
 
-      document.getElementById('seg-req-1').innerText = p.segment === 1 ? `Rem: ${40 - p.segmentProgress}` : `40 Pts`;
-      document.getElementById('seg-req-2').innerText = p.segment === 2 ? `Rem: ${60 - p.segmentProgress}` : `60 Pts`;
-      document.getElementById('seg-req-5').innerText = p.segment === 5 ? `Rem: ${170 - p.segmentProgress}` : `170 (6 Darts)`;
-      document.getElementById('seg-req-6').innerText = p.segment === 6 ? `Rem: ${201 - p.segmentProgress}` : `201 (9 Darts)`;
+      document.getElementById('seg-req-1').innerText = p.segment === 1 ? `Rem: ${30 - p.segmentProgress}` : `30 Pts`;
+      document.getElementById('seg-req-2').innerText = p.segment === 2 ? `Rem: ${51 - p.segmentProgress}` : `51 Pts`;
+      document.getElementById('seg-req-3').innerText = p.segment === 3 ? `Rem: ${75 - p.segmentProgress}` : `75+ Pts`;
+      document.getElementById('seg-req-5').innerText = p.segment === 5 ? `Rem: ${130 - p.segmentProgress}` : `130 (6 Darts)`;
+      document.getElementById('seg-req-6').innerText = p.segment === 6 ? `Rem: ${175 - p.segmentProgress}` : `175 (9 Darts)`;
 
       for (let i = 1; i <= 6; i++) {
         const segEl = document.getElementById(`seg-${i}`);
@@ -744,11 +745,12 @@
     }
 
     function getProgString(p) {
-      if (p.segment === 1) return `Rem: ${40 - p.segmentProgress} pts`;
-      if (p.segment === 2) return `Rem: ${60 - p.segmentProgress} pts`;
+      if (p.segment === 1) return `Rem: ${30 - p.segmentProgress} pts`;
+      if (p.segment === 2) return `Rem: ${51 - p.segmentProgress} pts`;
+      if (p.segment === 3) return `Rem: ${75 - p.segmentProgress} pts`;
       if (p.segment === 4) return `${p.segmentProgress}/3 same`;
-      if (p.segment === 5) return `Rem: ${170 - p.segmentProgress} (${6 - p.segmentDartsThrown} darts left)`;
-      if (p.segment === 6) return `Rem: ${201 - p.segmentProgress} (${9 - p.segmentDartsThrown} darts left)`;
+      if (p.segment === 5) return `Rem: ${130 - p.segmentProgress} (${6 - p.segmentDartsThrown} darts left)`;
+      if (p.segment === 6) return `Rem: ${175 - p.segmentProgress} (${9 - p.segmentDartsThrown} darts left)`;
       return `${p.segmentProgress} pts`;
     }
 
