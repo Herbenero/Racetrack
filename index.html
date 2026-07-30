@@ -1,578 +1,785 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Racetrack Darts</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Race Track #1 - Dart Game</title>
   <style>
     :root {
-      --bg-color: #121212;
-      --card-bg: #1e1e1e;
-      --accent-color: #00adb5;
-      --text-color: #eeeeee;
-      --text-muted: #888888;
-      --completed-color: #2e7d32;
-      --active-color: #d32f2f;
+      --bg-color: #1a1a1d;
+      --card-bg: #2d2d30;
+      --accent: #e50914;
+      --accent-hover: #b20710;
+      --text: #ffffff;
+      --text-muted: #aaaaaa;
+      --segment-complete: #4caf50;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background-color: var(--bg-color);
-      color: var(--text-color);
-      margin: 0;
-      padding: 20px;
+      color: var(--text);
       display: flex;
       flex-direction: column;
       align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    h1, h2, h3 {
+      text-align: center;
+      margin-bottom: 15px;
     }
 
     .container {
       width: 100%;
-      max-width: 800px;
-    }
-
-    h1 {
-      text-align: center;
-      color: var(--accent-color);
-      margin-bottom: 20px;
+      max-width: 900px;
     }
 
     .card {
-      background-color: var(--card-bg);
-      border-radius: 8px;
+      background: var(--card-bg);
       padding: 20px;
+      border-radius: 10px;
       margin-bottom: 20px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
     }
 
-    .setup-section {
-      display: flex;
-      gap: 10px;
+    .form-group {
       margin-bottom: 15px;
     }
 
-    input[type="text"] {
-      flex: 1;
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    input[type="text"], input[type="number"] {
+      width: 100%;
       padding: 10px;
-      border-radius: 4px;
-      border: 1px solid #444;
-      background: #2a2a2a;
+      border-radius: 5px;
+      border: 1px solid #555;
+      background: #111;
       color: #fff;
     }
 
-    button {
-      padding: 10px 15px;
+    .btn {
+      background: var(--accent);
+      color: white;
       border: none;
-      border-radius: 4px;
-      background-color: var(--accent-color);
-      color: #fff;
-      font-weight: bold;
+      padding: 12px 20px;
+      border-radius: 5px;
       cursor: pointer;
-      transition: opacity 0.2s;
+      font-weight: bold;
+      width: 100%;
+      font-size: 1rem;
+      transition: background 0.2s;
     }
 
-    button:hover {
-      opacity: 0.9;
+    .btn:hover {
+      background: var(--accent-hover);
     }
 
-    button:disabled {
-      background-color: #444;
+    .btn:disabled {
+      background: #555;
       cursor: not-allowed;
-      opacity: 0.5;
+      opacity: 0.6;
     }
 
-    .banner {
-      font-size: 1.2rem;
-      font-weight: bold;
-      text-align: center;
-      padding: 10px;
-      background: #2a2a2a;
-      border-radius: 4px;
-      margin-bottom: 15px;
-    }
-
-    .segments-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
-      gap: 10px;
-      margin-bottom: 15px;
-    }
-
-    .seg-box {
-      background: #2a2a2a;
-      padding: 10px;
-      border-radius: 4px;
-      text-align: center;
-      border: 2px solid transparent;
-    }
-
-    .seg-box.completed {
-      background: var(--completed-color);
-    }
-
-    .seg-title {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-    }
-
-    .seg-req {
-      font-weight: bold;
-      font-size: 0.9rem;
-      margin-top: 5px;
-    }
-
-    .turn-info {
+    .player-input-list {
       display: flex;
-      justify-content: space-around;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .game-header {
+      display: flex;
+      justify-content: space-between;
       align-items: center;
       margin-bottom: 15px;
-      background: #252525;
-      padding: 10px;
-      border-radius: 4px;
+      font-size: 1.2rem;
+      border-bottom: 2px solid #444;
+      padding-bottom: 10px;
     }
 
-    .dart-boxes {
+    .active-player-banner {
+      font-size: 1.8rem;
+      font-weight: bold;
+      text-align: center;
+      padding: 10px;
+      background: #333;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      color: #ffeb3b;
+      animation: flash 1s infinite alternate;
+    }
+
+    @keyframes flash {
+      0% { opacity: 1; transform: scale(1); }
+      100% { opacity: 0.7; transform: scale(1.02); }
+    }
+
+    .track-container {
       display: flex;
+      justify-content: space-between;
       gap: 10px;
+      margin: 20px 0;
+    }
+
+    .track-segment {
+      flex: 1;
+      background: #444;
+      border: 2px solid #666;
+      border-radius: 8px;
+      padding: 10px 5px;
+      text-align: center;
+      transition: all 0.3s;
+    }
+
+    .track-segment.completed {
+      background: var(--segment-complete);
+      border-color: #81c784;
+      box-shadow: 0 0 10px var(--segment-complete);
+    }
+
+    .track-segment .seg-title {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .track-segment .seg-req {
+      font-size: 0.75rem;
+      color: #ddd;
+    }
+
+    .dart-display-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 15px 0;
+    }
+
+    .dart-display {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 10px;
     }
 
     .dart-box {
-      width: 40px;
+      width: 70px;
       height: 40px;
-      border: 1px solid var(--accent-color);
+      border: 2px dashed #666;
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: bold;
-      border-radius: 4px;
+      border-radius: 5px;
+      background: #222;
     }
 
-    .keypad {
+    .turn-total {
+      font-weight: bold;
+      font-size: 1.1rem;
+      color: #ffeb3b;
+    }
+
+    .controls-grid {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
       gap: 8px;
-      margin-bottom: 15px;
+      margin-top: 15px;
     }
 
-    .modifiers {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 15px;
-    }
-
-    .mod-btn {
-      flex: 1;
-      background: #333;
-    }
-
-    .mod-btn.active {
-      background: var(--accent-color);
-    }
-
-    .color-section {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 15px;
-    }
-
-    .color-btn {
-      flex: 1;
-      padding: 12px;
-      border-radius: 4px;
+    .btn-pad {
+      padding: 12px 5px;
       font-weight: bold;
+      border-radius: 5px;
+      border: none;
+      background: #444;
+      color: #fff;
+      cursor: pointer;
     }
 
-    .color-red { background: #d32f2f; color: white; }
-    .color-green { background: #388e3c; color: white; }
-    .color-black { background: #000; color: white; border: 1px solid #444; }
-    .color-white { background: #fff; color: black; }
-
-    .action-row {
-      display: flex;
-      gap: 10px;
+    .btn-pad:hover {
+      background: #666;
     }
 
-    .action-row button {
-      flex: 1;
+    .btn-pad.modifier {
+      background: #0288d1;
+    }
+    .btn-pad.modifier.active {
+      background: #00bcd4;
+      box-shadow: 0 0 8px #00bcd4;
+    }
+
+    .btn-pad.color-white { background: #eee; color: #111; }
+    .btn-pad.color-red { background: #d32f2f; color: #fff; }
+    .btn-pad.color-green { background: #388e3c; color: #fff; }
+    .btn-pad.color-black { background: #111; color: #fff; border: 1px solid #555; }
+
+    .btn-pad.action {
+      background: #f57c00;
+    }
+
+    .advance-btn {
+      background: #388e3c;
+      color: white;
+      font-size: 1.1rem;
+      padding: 15px;
+      margin-top: 15px;
+    }
+
+    .advance-btn:hover {
+      background: #2e7d32;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+
+    th, td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid #444;
+    }
+
+    th {
+      background: #222;
     }
 
     .hidden {
-      display: none;
+      display: none !important;
     }
   </style>
 </head>
 <body>
 
-<div class="container">
-  <h1>RACETRACK DARTS</h1>
+  <div class="container">
+    <h1>🏁 Race Track 1 Darts 🏁</h1>
 
-  <!-- SETUP SECTION -->
-  <div id="setup-card" class="card">
-    <h3>Add Players</h3>
-    <div class="setup-section">
-      <input type="text" id="player-name-input" placeholder="Player Name">
-      <button id="btn-add-player">Add Player</button>
+    <!-- SETUP CARD -->
+    <div id="setup-card" class="card">
+      <h2>Game Setup</h2>
+      <div class="form-group">
+        <label for="laps-input">Target Laps (1 - 10):</label>
+        <input type="number" id="laps-input" min="1" max="10" value="3">
+      </div>
+
+      <div class="form-group">
+        <label>Players:</label>
+        <div id="player-inputs">
+          <div class="player-input-list">
+            <input type="text" class="player-name" placeholder="Player 1 Name" value="Player 1">
+          </div>
+          <div class="player-input-list">
+            <input type="text" class="player-name" placeholder="Player 2 Name" value="Player 2">
+          </div>
+        </div>
+        <button type="button" class="btn" id="add-player-btn" style="background:#444; margin-top:5px;">+ Add Player</button>
+      </div>
+
+      <button class="btn" id="start-game-btn">Start Race</button>
     </div>
-    <ul id="player-list"></ul>
-    <button id="btn-start-game" style="width: 100%; margin-top: 10px;" disabled>Start Game</button>
+
+    <!-- GAMEPLAY CARD -->
+    <div id="game-card" class="card hidden">
+      <div class="game-header">
+        <div>Round: <span id="round-num">1</span></div>
+        <div>Target Laps: <span id="target-laps">3</span></div>
+      </div>
+
+      <div id="active-player-banner" class="active-player-banner">
+        PLAYER 1's TURN
+      </div>
+
+      <h3>Current Lap Progress</h3>
+      <div class="track-container">
+        <div class="track-segment" id="seg-1">
+          <div class="seg-title">Seg 1</div>
+          <div class="seg-req" id="seg-req-1">40 Pts</div>
+        </div>
+        <div class="track-segment" id="seg-2">
+          <div class="seg-title">Seg 2</div>
+          <div class="seg-req" id="seg-req-2">60 Pts</div>
+        </div>
+        <div class="track-segment" id="seg-3">
+          <div class="seg-title">Seg 3</div>
+          <div class="seg-req" id="seg-req-3">100+ Pts</div>
+        </div>
+        <div class="track-segment" id="seg-4">
+          <div class="seg-title">Seg 4</div>
+          <div class="seg-req" id="seg-req-4">Same Color</div>
+        </div>
+        <div class="track-segment" id="seg-5">
+          <div class="seg-title">Seg 5</div>
+          <div class="seg-req" id="seg-req-5">170 (6 Darts)</div>
+        </div>
+        <div class="track-segment" id="seg-6">
+          <div class="seg-title">Seg 6</div>
+          <div class="seg-req" id="seg-req-6">201 (9 Darts)</div>
+        </div>
+      </div>
+
+      <div class="dart-display-container">
+        <div class="dart-display">
+          <div class="dart-box" id="dart-1">-</div>
+          <div class="dart-box" id="dart-2">-</div>
+          <div class="dart-box" id="dart-3">-</div>
+        </div>
+        <div class="turn-total">Turn Total: <span id="turn-total-score">0</span></div>
+      </div>
+
+      <div class="controls-grid">
+        <button class="btn-pad modifier" id="btn-double">DOUBLE</button>
+        <button class="btn-pad modifier" id="btn-triple">TRIPLE</button>
+        <button class="btn-pad action" id="btn-miss">MISS (0)</button>
+        <button class="btn-pad action" id="btn-undo" style="grid-column: span 2; background:#d32f2f;">UNDO</button>
+
+        <div id="number-buttons" style="display: contents;"></div>
+
+        <button class="btn-pad color-btn color-white" data-color="white">WHITE</button>
+        <button class="btn-pad color-btn color-red" data-color="red">RED</button>
+        <button class="btn-pad color-btn color-green" data-color="green">GREEN</button>
+        <button class="btn-pad color-btn color-black" data-color="black">BLACK</button>
+      </div>
+
+      <button class="btn advance-btn" id="btn-advance-turn" disabled>Advance Turn ➡️</button>
+
+      <h3 style="margin-top:25px;">Standings</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Player</th>
+            <th>Laps Completed</th>
+            <th>Current Segment</th>
+            <th>Total Rounds</th>
+          </tr>
+        </thead>
+        <tbody id="scoreboard-body">
+        </tbody>
+      </table>
+    </div>
+
+    <!-- GAME OVER CARD -->
+    <div id="game-over-card" class="card hidden">
+      <h2>🏆 Race Finished! 🏆</h2>
+      <div id="winner-announcement" style="text-align: center; font-size: 1.5rem; margin: 15px 0; color: #ffeb3b;"></div>
+      
+      <h3>Final Scoreboard</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Player</th>
+            <th>Laps Finished</th>
+            <th>Segments Completed</th>
+            <th>Total Rounds</th>
+          </tr>
+        </thead>
+        <tbody id="final-scoreboard-body">
+        </tbody>
+      </table>
+      <br>
+      <button class="btn" onclick="location.reload()">Play Again</button>
+    </div>
+
   </div>
 
-  <!-- GAME INTERFACE -->
-  <div id="game-card" class="card hidden">
-    <div id="active-player-banner" class="banner">PLAYER 1'S TURN (SEGMENT 1)</div>
+  <script>
+    let totalLaps = 3;
+    let players = [];
+    let currentPlayerIndex = 0;
+    let currentRound = 1;
+    let historyStack = [];
 
-    <div class="segments-grid">
-      <div id="seg-1" class="seg-box">
-        <div class="seg-title">Segment 1</div>
-        <div id="seg-req-1" class="seg-req">30 Pts</div>
-      </div>
-      <div id="seg-2" class="seg-box">
-        <div class="seg-title">Segment 2</div>
-        <div id="seg-req-2" class="seg-req">51 Pts</div>
-      </div>
-      <div id="seg-3" class="seg-box">
-        <div class="seg-title">Segment 3</div>
-        <div id="seg-req-3" class="seg-req">75+ Pts</div>
-      </div>
-      <div id="seg-4" class="seg-box">
-        <div class="seg-title">Segment 4</div>
-        <div id="seg-req-4" class="seg-req">Color Hit</div>
-      </div>
-      <div id="seg-5" class="seg-box">
-        <div class="seg-title">Segment 5</div>
-        <div id="seg-req-5" class="seg-req">130 (6 Darts)</div>
-      </div>
-      <div id="seg-6" class="seg-box">
-        <div class="seg-title">Segment 6</div>
-        <div id="seg-req-6" class="seg-req">170 (9 Darts)</div>
-      </div>
-    </div>
+    let isDouble = false;
+    let isTriple = false;
 
-    <div class="turn-info">
-      <div>Round: <span id="round-num">1</span></div>
-      <div class="dart-boxes">
-        <div id="dart-1" class="dart-box">-</div>
-        <div id="dart-2" class="dart-box">-</div>
-        <div id="dart-3" class="dart-box">-</div>
-      </div>
-      <div>Turn Total: <span id="turn-total">0</span></div>
-    </div>
+    const setupCard = document.getElementById('setup-card');
+    const gameCard = document.getElementById('game-card');
+    const gameOverCard = document.getElementById('game-over-card');
+    const playerInputsContainer = document.getElementById('player-inputs');
+    const addPlayerBtn = document.getElementById('add-player-btn');
+    const startGameBtn = document.getElementById('start-game-btn');
+    const numberButtonsContainer = document.getElementById('number-buttons');
+    
+    const activePlayerBanner = document.getElementById('active-player-banner');
+    const roundNumDisplay = document.getElementById('round-num');
+    const targetLapsDisplay = document.getElementById('target-laps');
+    const turnTotalScoreDisplay = document.getElementById('turn-total-score');
+    
+    const btnDouble = document.getElementById('btn-double');
+    const btnTriple = document.getElementById('btn-triple');
+    const btnMiss = document.getElementById('btn-miss');
+    const btnUndo = document.getElementById('btn-undo');
+    const btnAdvanceTurn = document.getElementById('btn-advance-turn');
+    const colorButtons = document.querySelectorAll('.color-btn');
 
-    <div class="modifiers">
-      <button id="btn-double" class="mod-btn">DOUBLE</button>
-      <button id="btn-triple" class="mod-btn">TRIPLE</button>
-    </div>
+    addPlayerBtn.addEventListener('click', () => {
+      const count = playerInputsContainer.children.length + 1;
+      const div = document.createElement('div');
+      div.className = 'player-input-list';
+      div.innerHTML = `<input type="text" class="player-name" placeholder="Player ${count} Name" value="Player ${count}">`;
+      playerInputsContainer.appendChild(div);
+    });
 
-    <!-- NUMBER KEYPAD (1-20 + Bull) -->
-    <div class="keypad">
-      <button class="num-btn" data-val="1">1</button>
-      <button class="num-btn" data-val="2">2</button>
-      <button class="num-btn" data-val="3">3</button>
-      <button class="num-btn" data-val="4">4</button>
-      <button class="num-btn" data-val="5">5</button>
-      <button class="num-btn" data-val="6">6</button>
-      <button class="num-btn" data-val="7">7</button>
-      <button class="num-btn" data-val="8">8</button>
-      <button class="num-btn" data-val="9">9</button>
-      <button class="num-btn" data-val="10">10</button>
-      <button class="num-btn" data-val="11">11</button>
-      <button class="num-btn" data-val="12">12</button>
-      <button class="num-btn" data-val="13">13</button>
-      <button class="num-btn" data-val="14">14</button>
-      <button class="num-btn" data-val="15">15</button>
-      <button class="num-btn" data-val="16">16</button>
-      <button class="num-btn" data-val="17">17</button>
-      <button class="num-btn" data-val="18">18</button>
-      <button class="num-btn" data-val="19">19</button>
-      <button class="num-btn" data-val="20">20</button>
-      <button class="num-btn" data-val="25" style="grid-column: span 2;">BULL</button>
-      <button id="btn-miss" style="grid-column: span 3; background: #555;">MISS (0)</button>
-    </div>
+    for (let i = 1; i <= 20; i++) {
+      createNumButton(i, i.toString());
+    }
+    createNumButton(25, 'BULL');
 
-    <!-- COLOR SELECTION (For Segment 4) -->
-    <div class="color-section">
-      <button class="color-btn color-red" data-color="Red">RED</button>
-      <button class="color-btn color-green" data-color="Green">GREEN</button>
-      <button class="color-btn color-black" data-color="Black">BLACK</button>
-      <button class="color-btn color-white" data-color="White">WHITE</button>
-    </div>
+    function createNumButton(val, label) {
+      const btn = document.createElement('button');
+      btn.className = 'btn-pad num-btn';
+      btn.innerText = label;
+      btn.dataset.value = val;
+      btn.addEventListener('click', () => handleDartInput({ type: 'number', value: val }));
+      numberButtonsContainer.appendChild(btn);
+    }
 
-    <div class="action-row">
-      <button id="btn-undo" style="background: #e65100;">UNDO</button>
-      <button id="btn-advance" disabled>ADVANCE TURN</button>
-    </div>
-  </div>
-</div>
+    startGameBtn.addEventListener('click', startGame);
 
-<script>
-  // Game State
-  let players = [];
-  let currentPlayerIndex = 0;
-  let currentRound = 1;
-  let isDouble = false;
-  let isTriple = false;
-  let historyStack = [];
+    function startGame() {
+      const nameInputs = document.querySelectorAll('.player-name');
+      const names = Array.from(nameInputs).map(input => input.value.trim()).filter(n => n !== '');
+      if (names.length === 0) return alert('Please enter at least 1 player.');
 
-  // DOM Elements
-  const setupCard = document.getElementById('setup-card');
-  const gameCard = document.getElementById('game-card');
-  const playerNameInput = document.getElementById('player-name-input');
-  const btnAddPlayer = document.getElementById('btn-add-player');
-  const playerList = document.getElementById('player-list');
-  const btnStartGame = document.getElementById('btn-start-game');
+      totalLaps = parseInt(document.getElementById('laps-input').value) || 3;
+      targetLapsDisplay.innerText = totalLaps;
 
-  const activePlayerBanner = document.getElementById('active-player-banner');
-  const roundNumDisplay = document.getElementById('round-num');
-  const turnTotalScoreDisplay = document.getElementById('turn-total');
-  const btnAdvanceTurn = document.getElementById('btn-advance');
-  const btnDouble = document.getElementById('btn-double');
-  const btnTriple = document.getElementById('btn-triple');
-  const btnMiss = document.getElementById('btn-miss');
-  const btnUndo = document.getElementById('btn-undo');
-  const colorButtons = document.querySelectorAll('.color-btn');
-
-  // Setup Handlers
-  btnAddPlayer.addEventListener('click', () => {
-    const name = playerNameInput.value.trim();
-    if (name) {
-      players.push({
+      players = names.map(name => ({
         name: name,
+        laps: 0,
         segment: 1,
         segmentProgress: 0,
-        dartsInSegment: 0,
+        segmentDartsThrown: 0,
+        colorTracker: null,
+        roundsCount: 1,
         currentTurnDarts: [],
         currentTurnScores: [],
-        completedSegmentThisTurn: false,
-        roundsCount: 0
-      });
-      playerNameInput.value = '';
-      renderPlayerList();
+        completedSegmentThisTurn: false
+      }));
+
+      setupCard.classList.add('hidden');
+      gameCard.classList.remove('hidden');
+
+      updateUI();
     }
-  });
 
-  function renderPlayerList() {
-    playerList.innerHTML = players.map(p => `<li>${p.name}</li>`).join('');
-    btnStartGame.disabled = players.length === 0;
-  }
-
-  btnStartGame.addEventListener('click', () => {
-    setupCard.classList.add('hidden');
-    gameCard.classList.remove('hidden');
-    updateUI();
-  });
-
-  // Modifier Handlers
-  btnDouble.addEventListener('click', () => {
-    isDouble = !isDouble;
-    if (isDouble) isTriple = false;
-    updateModifierUI();
-  });
-
-  btnTriple.addEventListener('click', () => {
-    isTriple = !isTriple;
-    if (isTriple) isDouble = false;
-    updateModifierUI();
-  });
-
-  function updateModifierUI() {
-    btnDouble.classList.toggle('active', isDouble);
-    btnTriple.classList.toggle('active', isTriple);
-  }
-
-  // Keypad Scoring
-  document.querySelectorAll('.num-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const baseVal = parseInt(btn.getAttribute('data-val'));
-      let multiplier = 1;
-      let label = baseVal.toString();
-
-      if (isDouble) {
-        multiplier = 2;
-        label = 'D' + baseVal;
-      } else if (isTriple) {
-        if (baseVal === 25) return; // No Triple Bull
-        multiplier = 3;
-        label = 'T' + baseVal;
-      }
-
-      processDartThrow(baseVal * multiplier, label);
+    btnDouble.addEventListener('click', () => {
+      isDouble = !isDouble;
+      if (isDouble) isTriple = false;
+      updateModifierUI();
     });
-  });
 
-  btnMiss.addEventListener('click', () => {
-    processDartThrow(0, 'M');
-  });
-
-  colorButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const color = btn.getAttribute('data-color');
-      processDartThrow(0, color, true);
+    btnTriple.addEventListener('click', () => {
+      isTriple = !isTriple;
+      if (isTriple) isDouble = false;
+      updateModifierUI();
     });
-  });
 
-  function processDartThrow(score, label, isColorHit = false) {
-    saveState();
-    const p = players[currentPlayerIndex];
-
-    if (p.currentTurnDarts.length >= 3 || p.completedSegmentThisTurn) return;
-
-    p.currentTurnDarts.push(label);
-    p.currentTurnScores.push(score);
-    p.dartsInSegment += 1;
-
-    // Segment Logic with updated score targets
-    if (p.segment === 1) {
-      p.segmentProgress += score;
-      if (p.segmentProgress === 30) {
-        advanceSegment(p);
-      } else if (p.segmentProgress > 30) {
-        // Bust segment 1 progress
-        p.segmentProgress = 0;
-      }
-    } else if (p.segment === 2) {
-      p.segmentProgress += score;
-      if (p.segmentProgress === 51) {
-        advanceSegment(p);
-      } else if (p.segmentProgress > 51) {
-        // Bust segment 2 progress
-        p.segmentProgress = 0;
-      }
-    } else if (p.segment === 3) {
-      p.segmentProgress += score;
-      if (p.segmentProgress >= 75) {
-        advanceSegment(p);
-      }
-    } else if (p.segment === 4) {
-      if (isColorHit) {
-        advanceSegment(p);
-      }
-    } else if (p.segment === 5) {
-      p.segmentProgress += score;
-      if (p.segmentProgress === 130 && p.dartsInSegment <= 6) {
-        advanceSegment(p);
-      } else if (p.segmentProgress > 130 || p.dartsInSegment >= 6) {
-        // Reset segment 5
-        p.segmentProgress = 0;
-        p.dartsInSegment = 0;
-      }
-    } else if (p.segment === 6) {
-      p.segmentProgress += score;
-      if (p.segmentProgress === 170 && p.dartsInSegment <= 9) {
-        alert(`${p.name} WINS THE GAME!`);
-        advanceSegment(p);
-      } else if (p.segmentProgress > 170 || p.dartsInSegment >= 9) {
-        // Reset segment 6
-        p.segmentProgress = 0;
-        p.dartsInSegment = 0;
-      }
+    function updateModifierUI() {
+      btnDouble.classList.toggle('active', isDouble);
+      btnTriple.classList.toggle('active', isTriple);
     }
 
-    // Reset modifiers
-    isDouble = false;
-    isTriple = false;
-    updateModifierUI();
-    updateUI();
-  }
-
-  function advanceSegment(p) {
-    p.segment += 1;
-    p.segmentProgress = 0;
-    p.dartsInSegment = 0;
-    p.completedSegmentThisTurn = true;
-  }
-
-  btnAdvanceTurn.addEventListener('click', () => {
-    saveState();
-    const p = players[currentPlayerIndex];
-
-    // Reset progress if exact target not hit for exact-score segments
-    if (!p.completedSegmentThisTurn) {
-      if (p.segment === 1 && p.segmentProgress !== 30) p.segmentProgress = 0;
-      if (p.segment === 2 && p.segmentProgress !== 51) p.segmentProgress = 0;
-      if (p.segment === 3 && p.segmentProgress < 75) p.segmentProgress = 0;
+    function resetModifiers() {
+      isDouble = false;
+      isTriple = false;
+      updateModifierUI();
     }
-
-    p.currentTurnDarts = [];
-    p.currentTurnScores = [];
-    p.completedSegmentThisTurn = false;
-    p.roundsCount += 1;
-
-    currentPlayerIndex++;
-    if (currentPlayerIndex >= players.length) {
-      currentPlayerIndex = 0;
-      currentRound++;
-    }
-
-    updateUI();
-  });
-
-  function saveState() {
-    historyStack.push(JSON.stringify({
-      players,
-      currentPlayerIndex,
-      currentRound,
-      isDouble,
-      isTriple
-    }));
-  }
-
-  btnUndo.addEventListener('click', () => {
-    if (historyStack.length === 0) return;
-    const state = JSON.parse(historyStack.pop());
-    players = state.players;
-    currentPlayerIndex = state.currentPlayerIndex;
-    currentRound = state.currentRound;
-    isDouble = state.isDouble;
-    isTriple = state.isTriple;
-    updateModifierUI();
-    updateUI();
-  });
-
-  function updateUI() {
-    const p = players[currentPlayerIndex];
-
-    activePlayerBanner.innerText = `${p.name.toUpperCase()}'S TURN (SEGMENT ${p.segment})`;
-    roundNumDisplay.innerText = currentRound;
-
-    for (let i = 1; i <= 3; i++) {
-      const box = document.getElementById(`dart-${i}`);
-      box.innerText = p.currentTurnDarts[i - 1] || '-';
-    }
-
-    const totalTurnScore = p.currentTurnScores.reduce((a, b) => a + b, 0);
-    turnTotalScoreDisplay.innerText = totalTurnScore;
-
-    const turnComplete = p.currentTurnDarts.length === 3 || p.completedSegmentThisTurn;
-    btnAdvanceTurn.disabled = !turnComplete;
-
-    // Dynamic segment requirement text displays
-    document.getElementById('seg-req-1').innerText = p.segment === 1 ? `Rem: ${30 - p.segmentProgress}` : `30 Pts`;
-    document.getElementById('seg-req-2').innerText = p.segment === 2 ? `Rem: ${51 - p.segmentProgress}` : `51 Pts`;
-    document.getElementById('seg-req-3').innerText = p.segment === 3 ? `Rem: ${Math.max(0, 75 - p.segmentProgress)}` : `75+ Pts`;
-    document.getElementById('seg-req-5').innerText = p.segment === 5 ? `Rem: ${130 - p.segmentProgress}` : `130 (6 Darts)`;
-    document.getElementById('seg-req-6').innerText = p.segment === 6 ? `Rem: ${170 - p.segmentProgress}` : `170 (9 Darts)`;
-
-    for (let i = 1; i <= 6; i++) {
-      const segEl = document.getElementById(`seg-${i}`);
-      if (i < p.segment) {
-        segEl.classList.add('completed');
-      } else {
-        segEl.classList.remove('completed');
-      }
-    }
-
-    const isSeg4 = (p.segment === 4);
-    const numBtns = document.querySelectorAll('.num-btn');
-    numBtns.forEach(btn => btn.disabled = isSeg4 || turnComplete);
-    btnDouble.disabled = isSeg4 || turnComplete;
-    btnTriple.disabled = isSeg4 || turnComplete;
-    btnMiss.disabled = turnComplete;
 
     colorButtons.forEach(btn => {
-      btn.disabled = !isSeg4 || turnComplete;
-      btn.style.opacity = (isSeg4 && !turnComplete) ? '1' : '0.2';
+      btn.addEventListener('click', () => {
+        const color = btn.dataset.color;
+        handleDartInput({ type: 'color', value: color });
+      });
     });
-  }
-</script>
+
+    btnMiss.addEventListener('click', () => {
+      handleDartInput({ type: 'miss', value: 0 });
+    });
+
+    btnUndo.addEventListener('click', undoLastAction);
+    btnAdvanceTurn.addEventListener('click', advanceTurn);
+
+    function handleDartInput(dart) {
+      const p = players[currentPlayerIndex];
+
+      if (p.currentTurnDarts.length >= 3) return;
+
+      saveState();
+
+      let score = 0;
+      let dartText = 'MISS';
+
+      if (dart.type === 'number') {
+        let mult = 1;
+        let multPrefix = '';
+        if (isDouble) { mult = 2; multPrefix = 'D'; }
+        if (isTriple && dart.value !== 25) { mult = 3; multPrefix = 'T'; }
+
+        score = dart.value * mult;
+        dartText = multPrefix + (dart.value === 25 ? 'BULL' : dart.value);
+      } else if (dart.type === 'color') {
+        dartText = dart.value.toUpperCase();
+      }
+
+      p.currentTurnDarts.push(dartText);
+      p.currentTurnScores.push(score);
+
+      processSegmentProgress(p, dart, score);
+
+      resetModifiers();
+      updateUI();
+    }
+
+    function processSegmentProgress(p, dart, score) {
+      const seg = p.segment;
+
+      if (seg === 1) { // EXACT 40
+        if (dart.type === 'number') {
+          p.segmentProgress += score;
+          if (p.segmentProgress === 40) {
+            advanceSegment(p);
+          } else if (p.segmentProgress > 40) {
+            p.segmentProgress = 0;
+          }
+        }
+      } 
+      else if (seg === 2) { // EXACT 60
+        if (dart.type === 'number') {
+          p.segmentProgress += score;
+          if (p.segmentProgress === 60) {
+            advanceSegment(p);
+          } else if (p.segmentProgress > 60) {
+            p.segmentProgress = 0;
+          }
+        }
+      } 
+      else if (seg === 3) { // 100+ Total in round
+        if (dart.type === 'number') {
+          p.segmentProgress += score;
+          if (p.segmentProgress >= 100) {
+            advanceSegment(p);
+          }
+        }
+      } 
+      else if (seg === 4) { // 3 Same Color
+        if (dart.type === 'color') {
+          const selectedColor = dart.value.toLowerCase();
+          if (!p.colorTracker) {
+            p.colorTracker = selectedColor;
+            p.segmentProgress = 1;
+          } else if (p.colorTracker === selectedColor) {
+            p.segmentProgress += 1;
+          } else {
+            p.colorTracker = selectedColor;
+            p.segmentProgress = 1;
+          }
+
+          if (p.segmentProgress >= 3) {
+            advanceSegment(p);
+          }
+        } else if (dart.type === 'miss') {
+          p.colorTracker = null;
+          p.segmentProgress = 0;
+        }
+      } 
+      else if (seg === 5) { // 170 EXACT in 6 Darts
+        p.segmentDartsThrown += 1;
+        if (dart.type === 'number') p.segmentProgress += score;
+
+        if (p.segmentProgress === 170) {
+          advanceSegment(p);
+        } else if (p.segmentProgress > 170 || p.segmentDartsThrown >= 6) {
+          p.segmentProgress = 0;
+          p.segmentDartsThrown = 0;
+        }
+      } 
+      else if (seg === 6) { // 201 EXACT in 9 Darts
+        p.segmentDartsThrown += 1;
+        if (dart.type === 'number') p.segmentProgress += score;
+
+        if (p.segmentProgress === 201) {
+          advanceSegment(p);
+        } else if (p.segmentProgress > 201 || p.segmentDartsThrown >= 9) {
+          p.segmentProgress = 0;
+          p.segmentDartsThrown = 0;
+        }
+      }
+    }
+
+    function advanceSegment(p) {
+      p.segment += 1;
+      p.segmentProgress = 0;
+      p.segmentDartsThrown = 0;
+      p.colorTracker = null;
+      p.completedSegmentThisTurn = true;
+
+      if (p.segment > 6) {
+        p.laps += 1;
+        p.segment = 1;
+        if (p.laps >= totalLaps) {
+          endGame();
+          return;
+        }
+      }
+    }
+
+    function advanceTurn() {
+      const p = players[currentPlayerIndex];
+
+      if (!p.completedSegmentThisTurn) {
+        if (p.segment === 1 && p.segmentProgress !== 40) p.segmentProgress = 0;
+        if (p.segment === 2 && p.segmentProgress !== 60) p.segmentProgress = 0;
+        if (p.segment === 3 && p.segmentProgress < 100) p.segmentProgress = 0;
+      }
+
+      p.currentTurnDarts = [];
+      p.currentTurnScores = [];
+      p.completedSegmentThisTurn = false;
+      p.roundsCount += 1;
+
+      currentPlayerIndex++;
+      if (currentPlayerIndex >= players.length) {
+        currentPlayerIndex = 0;
+        currentRound++;
+      }
+
+      updateUI();
+    }
+
+    function saveState() {
+      historyStack.push(JSON.stringify({
+        players,
+        currentPlayerIndex,
+        currentRound,
+        isDouble,
+        isTriple
+      }));
+    }
+
+    function undoLastAction() {
+      if (historyStack.length === 0) return;
+      const state = JSON.parse(historyStack.pop());
+      players = state.players;
+      currentPlayerIndex = state.currentPlayerIndex;
+      currentRound = state.currentRound;
+      isDouble = state.isDouble;
+      isTriple = state.isTriple;
+
+      updateModifierUI();
+      updateUI();
+    }
+
+    function updateUI() {
+      const p = players[currentPlayerIndex];
+
+      activePlayerBanner.innerText = `${p.name.toUpperCase()}'S TURN (SEGMENT ${p.segment})`;
+      roundNumDisplay.innerText = currentRound;
+
+      for (let i = 1; i <= 3; i++) {
+        const box = document.getElementById(`dart-${i}`);
+        box.innerText = p.currentTurnDarts[i - 1] || '-';
+      }
+
+      const totalTurnScore = p.currentTurnScores.reduce((a, b) => a + b, 0);
+      turnTotalScoreDisplay.innerText = totalTurnScore;
+
+      const turnComplete = p.currentTurnDarts.length === 3 || p.completedSegmentThisTurn;
+      btnAdvanceTurn.disabled = !turnComplete;
+
+      document.getElementById('seg-req-1').innerText = p.segment === 1 ? `Rem: ${40 - p.segmentProgress}` : `40 Pts`;
+      document.getElementById('seg-req-2').innerText = p.segment === 2 ? `Rem: ${60 - p.segmentProgress}` : `60 Pts`;
+      document.getElementById('seg-req-5').innerText = p.segment === 5 ? `Rem: ${170 - p.segmentProgress}` : `170 (6 Darts)`;
+      document.getElementById('seg-req-6').innerText = p.segment === 6 ? `Rem: ${201 - p.segmentProgress}` : `201 (9 Darts)`;
+
+      for (let i = 1; i <= 6; i++) {
+        const segEl = document.getElementById(`seg-${i}`);
+        if (i < p.segment) {
+          segEl.classList.add('completed');
+        } else {
+          segEl.classList.remove('completed');
+        }
+      }
+
+      const isSeg4 = (p.segment === 4);
+      
+      const numBtns = document.querySelectorAll('.num-btn');
+      numBtns.forEach(btn => btn.disabled = isSeg4 || turnComplete);
+      btnDouble.disabled = isSeg4 || turnComplete;
+      btnTriple.disabled = isSeg4 || turnComplete;
+      btnMiss.disabled = turnComplete;
+
+      colorButtons.forEach(btn => {
+        btn.disabled = !isSeg4 || turnComplete;
+        btn.style.opacity = (isSeg4 && !turnComplete) ? '1' : '0.2';
+      });
+
+      const scoreboardBody = document.getElementById('scoreboard-body');
+      scoreboardBody.innerHTML = '';
+      players.forEach((player, idx) => {
+        const tr = document.createElement('tr');
+        if (idx === currentPlayerIndex) tr.style.background = '#333';
+        tr.innerHTML = `
+          <td>${player.name} ${idx === currentPlayerIndex ? '🎯' : ''}</td>
+          <td>${player.laps} / ${totalLaps}</td>
+          <td>Seg ${player.segment} (${getProgString(player)})</td>
+          <td>${player.roundsCount - 1}</td>
+        `;
+        scoreboardBody.appendChild(tr);
+      });
+    }
+
+    function getProgString(p) {
+      if (p.segment === 1) return `Rem: ${40 - p.segmentProgress} pts`;
+      if (p.segment === 2) return `Rem: ${60 - p.segmentProgress} pts`;
+      if (p.segment === 4) return `${p.segmentProgress}/3 same`;
+      if (p.segment === 5) return `Rem: ${170 - p.segmentProgress} (${6 - p.segmentDartsThrown} darts left)`;
+      if (p.segment === 6) return `Rem: ${201 - p.segmentProgress} (${9 - p.segmentDartsThrown} darts left)`;
+      return `${p.segmentProgress} pts`;
+    }
+
+    function endGame() {
+      gameCard.classList.add('hidden');
+      gameOverCard.classList.remove('hidden');
+
+      const sorted = [...players].sort((a, b) => {
+        if (b.laps !== a.laps) return b.laps - a.laps;
+        if (b.segment !== a.segment) return b.segment - a.segment;
+        return a.roundsCount - b.roundsCount;
+      });
+
+      const winner = sorted[0];
+      document.getElementById('winner-announcement').innerText = `Winner: ${winner.name}!`;
+
+      const finalBody = document.getElementById('final-scoreboard-body');
+      finalBody.innerHTML = '';
+      sorted.forEach((p, idx) => {
+        const tr = document.createElement('tr');
+        const segsCompletedTotal = (p.laps * 6) + (p.segment - 1);
+        tr.innerHTML = `
+          <td>${idx + 1}</td>
+          <td>${p.name}</td>
+          <td>${p.laps}</td>
+          <td>${segsCompletedTotal}</td>
+          <td>${p.roundsCount - 1}</td>
+        `;
+        finalBody.appendChild(tr);
+      });
+    }
+  </script>
 </body>
 </html>
