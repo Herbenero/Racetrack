@@ -437,7 +437,8 @@
     for (let i = 1; i <= 20; i++) {
       createNumButton(i, i.toString());
     }
-    createNumButton(25, 'BULL');
+    // Bull value set to 50 points
+    createNumButton(50, 'BULL');
 
     function createNumButton(val, label) {
       const btn = document.createElement('button');
@@ -527,11 +528,18 @@
       if (dart.type === 'number') {
         let mult = 1;
         let multPrefix = '';
-        if (isDouble) { mult = 2; multPrefix = 'D'; }
-        if (isTriple && dart.value !== 25) { mult = 3; multPrefix = 'T'; }
+
+        // BULL (50) is fixed at 50 pts regardless of modifiers
+        if (dart.value === 50) {
+          mult = 1;
+          dartText = 'BULL';
+        } else {
+          if (isDouble) { mult = 2; multPrefix = 'D'; }
+          if (isTriple) { mult = 3; multPrefix = 'T'; }
+          dartText = multPrefix + dart.value;
+        }
 
         score = dart.value * mult;
-        dartText = multPrefix + (dart.value === 25 ? 'BULL' : dart.value);
       } else if (dart.type === 'color') {
         dartText = dart.value.toUpperCase();
       }
