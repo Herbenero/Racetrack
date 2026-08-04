@@ -170,8 +170,8 @@
         }
 
         .dart-box {
-            width: 70px;
-            height: 40px;
+            width: 80px;
+            height: 45px;
             border: 2px dashed #666;
             display: flex;
             align-items: center;
@@ -179,6 +179,7 @@
             font-weight: bold;
             border-radius: 5px;
             background: #111;
+            font-size: 1rem;
         }
 
         .turn-total {
@@ -202,6 +203,7 @@
             background: #444;
             color: #fff;
             cursor: pointer;
+            font-size: 0.95rem;
         }
 
         .btn-pad:hover { background: #666; }
@@ -211,6 +213,7 @@
         .btn-pad.color-red { background: #d32f2f; color: #fff; }
         .btn-pad.color-green { background: #388e3c; color: #fff; }
         .btn-pad.color-black { background: #111; color: #fff; border: 1px solid #555; }
+        .btn-pad.action { background: #f57c00; }
 
         .advance-btn {
             background: #388e3c;
@@ -244,7 +247,7 @@
 
     <!-- SETUP CARD -->
     <div id="setup-card" class="card">
-        <h1>🏁 Race Track Dart Game - Queensland 🏁</h1>
+        <h1>🏁 Race Track Dart Game 🏁</h1>
         <div class="form-group">
             <label>Player Names (Comma Separated):</label>
             <input type="text" id="player-names-input" placeholder="e.g. Alice, Bob, Charlie">
@@ -258,7 +261,7 @@
 
     <!-- GAME CARD -->
     <div id="game-card" class="card hidden">
-        <h2>🏁 Race Track Dart Game - Queensland 🏁</h2>
+        <h2>🏁 Race Track #1 🏁</h2>
         <div class="game-header">
             <div>Round: <span id="rt-round-num">1</span></div>
             <div>Target Laps: <span id="rt-target-laps">3</span></div>
@@ -299,11 +302,11 @@
                 <div class="dart-box" id="rt-dart-2">-</div>
                 <div class="dart-box" id="rt-dart-3">-</div>
             </div>
-            <div class="turn-total">Turn Total: <span id="rt-turn-score">0</span></div>
+            <div class="turn-total">Turn Score: <span id="rt-turn-score">0</span></div>
         </div>
 
         <div class="controls-grid" id="rt-controls">
-            <!-- Dynamic keypad controls based on active segment -->
+            <!-- Dynamic keypad & color controls injected here -->
         </div>
 
         <button class="btn advance-btn" id="rt-btn-advance" disabled onclick="advanceTurn()">Advance Turn ➡️</button>
@@ -339,7 +342,8 @@
         currentRound: 1,
         currentPlayerIndex: 0,
         players: [],
-        darts: []
+        darts: [],
+        activeModifier: 1
     };
 
     function startGame() {
@@ -355,6 +359,7 @@
         gameState.currentRound = 1;
         gameState.currentPlayerIndex = 0;
         gameState.darts = [];
+        gameState.activeModifier = 1;
 
         gameState.players = playerNames.map(name => ({
             name: name,
@@ -366,7 +371,6 @@
 
         document.getElementById('setup-card').classList.add('hidden');
         document.getElementById('game-card').classList.remove('hidden');
-
         document.getElementById('rt-target-laps').innerText = gameState.targetLaps;
 
         updateUI();
@@ -383,10 +387,128 @@
             segBox.classList.toggle('completed', i < p.currentSegment);
         }
 
+        // Display Darts thrown this turn
+        for (let i = 1; i <= 3; i++) {
+            const dartBox = document.getElementById(`rt-dart-${i}`);
+            if (gameState.darts[i - 1]) {
+                const d = gameState.darts[i - 1];
+                dartBox.innerText = d.label || d.val || d.color;
+            } else {
+                dartBox.innerText = '-';
+            }
+        }
+
+        // Calculate Turn Total Score
+        const turnTotal = gameState.darts.reduce((acc, curr) => acc + (curr.val || 0), 0);
+        document.getElementById('rt-turn-score').innerText = turnTotal;
+
+        // Render Dynamic Keypad Buttons
+        renderControls(p.currentSegment);
+
         // Render Vertical Scoreboard
         renderVerticalScoreboard();
 
-        document.getElementById('rt-btn-advance').disabled = gameState.darts.length === 0;
+        // Enable Advance button if 3 darts entered
+        document.getElementById('rt-btn-advance').disabled = gameState.darts.length < 3;
+    }
+
+    function renderControls(currentSegment) {
+        const container = document.getElementById('rt-controls');
+        container.innerHTML = '';
+
+        if (gameState.darts.length >= 3) {
+            container.innerHTML = `<div style="grid-column: 1 / -1; text-align:center; color:#81c784; font-weight:bold; padding:10px;">Turn Complete! Click 'Advance Turn' to proceed.</div>`;
+            return;
+        }
+
+        // SEGMENT 6: Render Color Buttons
+        if (currentSegment === 6) {
+            const colors = [
+                { name: 'Red', class: 'color-red' },
+                { name: 'Green', class: 'color-green' },
+                { name: 'White', class: 'color-white' },
+                { name: 'Black', class: 'color-black' },
+                { name: 'Miss', class: '' }
+            ];
+
+            colors.forEach(c => {
+                const btn = document.createElement('button');
+                btn.className = `btn-pad ${c.class}`;
+                btn.innerText = c.name;
+                btn.onclick = () => recordColorDart(c.name);
+                container.appendChild(btn);
+            });
+            return;
+        }
+
+        // SEGMENTS 1 - 5: Render Multipliers & Number Score Controls
+        const mod1 = document.createElement('button');
+        mod1.className = `btn-pad modifier ${gameState.activeModifier === 1 ? 'active' : ''}`;
+        mod1.innerText = 'Single (1x)';
+        mod1.onclick = () => setModifier(1);
+
+        const mod2 = document.createElement('button');
+        mod2.className = `btn-pad modifier ${gameState.activeModifier === 2 ? 'active' : ''}`;
+        mod2.innerText = 'Double (2x)';
+        mod2.onclick = () => setModifier(2);
+
+        const mod3 = document.createElement('button');
+        mod3.className = `btn-pad modifier ${gameState.activeModifier === 3 ? 'active' : ''}`;
+        mod3.innerText = 'Triple (3x)';
+        mod3.onclick = () => setModifier(3);
+
+        container.appendChild(mod1);
+        container.appendChild(mod2);
+        container.appendChild(mod3);
+
+        const bull = document.createElement('button');
+        bull.className = 'btn-pad action';
+        bull.innerText = 'Bull (25)';
+        bull.onclick = () => recordScoreDart(25, 'Bull');
+
+        const dbull = document.createElement('button');
+        dbull.className = 'btn-pad action';
+        dbull.innerText = 'D-Bull (50)';
+        dbull.onclick = () => recordScoreDart(50, 'D-Bull');
+
+        container.appendChild(bull);
+        container.appendChild(dbull);
+
+        // Numeric Point Pads (Quick Scores: 1 to 20, plus Miss)
+        for (let i = 1; i <= 20; i++) {
+            const btn = document.createElement('button');
+            btn.className = 'btn-pad';
+            const val = i * gameState.activeModifier;
+            const prefix = gameState.activeModifier === 2 ? 'D' : gameState.activeModifier === 3 ? 'T' : '';
+            btn.innerText = `${prefix}${i}`;
+            btn.onclick = () => recordScoreDart(val, `${prefix}${i}`);
+            container.appendChild(btn);
+        }
+
+        const miss = document.createElement('button');
+        miss.className = 'btn-pad action';
+        miss.style.gridColumn = 'span 5';
+        miss.innerText = 'Miss (0)';
+        miss.onclick = () => recordScoreDart(0, 'Miss');
+        container.appendChild(miss);
+    }
+
+    function setModifier(mod) {
+        gameState.activeModifier = mod;
+        updateUI();
+    }
+
+    function recordScoreDart(baseVal, label) {
+        if (gameState.darts.length >= 3) return;
+        gameState.darts.push({ val: baseVal, label: label });
+        gameState.activeModifier = 1; // reset modifier back to single
+        updateUI();
+    }
+
+    function recordColorDart(colorName) {
+        if (gameState.darts.length >= 3) return;
+        gameState.darts.push({ color: colorName, label: colorName, val: 0 });
+        updateUI();
     }
 
     function renderVerticalScoreboard() {
@@ -416,7 +538,42 @@
     }
 
     function advanceTurn() {
+        const p = gameState.players[gameState.currentPlayerIndex];
+        const turnTotal = gameState.darts.reduce((acc, curr) => acc + (curr.val || 0), 0);
+
+        // Segment Requirement Evaluation Logic
+        if (p.currentSegment === 1 && turnTotal >= 25) {
+            p.currentSegment = 2;
+        } else if (p.currentSegment === 2 && turnTotal >= 40) {
+            p.currentSegment = 3;
+        } else if (p.currentSegment === 3 && turnTotal >= 60) {
+            p.currentSegment = 4;
+        } else if (p.currentSegment === 4 && turnTotal >= 75) {
+            p.currentSegment = 5;
+        } else if (p.currentSegment === 5) {
+            p.seg5Progress += turnTotal;
+            p.seg5DartsUsed += 3;
+            if (p.seg5Progress >= 110 && p.seg5DartsUsed <= 6) {
+                p.currentSegment = 6;
+            } else if (p.seg5DartsUsed >= 6) {
+                // Reset Seg 5 if target not reached in 6 darts
+                p.seg5Progress = 0;
+                p.seg5DartsUsed = 0;
+            }
+        } else if (p.currentSegment === 6 && gameState.darts.length === 3) {
+            const firstColor = gameState.darts[0].color;
+            const allSame = gameState.darts.every(d => d.color === firstColor && d.color !== 'Miss');
+            if (allSame) {
+                p.laps++;
+                p.currentSegment = 1; // Lap complete, start next lap
+                if (p.laps >= gameState.targetLaps) {
+                    alert(`🎉 Congratulations ${p.name}! You won the race! 🎉`);
+                }
+            }
+        }
+
         gameState.darts = [];
+        gameState.activeModifier = 1;
         gameState.currentPlayerIndex++;
 
         if (gameState.currentPlayerIndex >= gameState.players.length) {
