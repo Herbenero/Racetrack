@@ -1,603 +1,628 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Race Track Dart Game - Queensland</title>
-  <style>
-    :root {
-      --bg-color: #1a1a1d;
-      --card-bg: #2d2d30;
-      --accent: #e50914;
-      --accent-hover: #b20710;
-      --text: #ffffff;
-      --text-muted: #aaaaaa;
-      --segment-complete: #4caf50;
-    }
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-    body {
-      background-color: var(--bg-color);
-      color: var(--text);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
-      padding: 20px;
-    }
-    .container {
-      width: 100%;
-      max-width: 900px;
-    }
-    .card {
-      background-color: var(--card-bg);
-      border-radius: 12px;
-      padding: 24px;
-      margin-bottom: 20px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-    }
-    .hidden {
-      display: none !important;
-    }
-    h1, h2, h3 {
-      text-align: center;
-      margin-bottom: 20px;
-      color: var(--accent);
-    }
-    .btn {
-      background-color: var(--accent);
-      color: #fff;
-      border: none;
-      padding: 12px 20px;
-      border-radius: 6px;
-      font-size: 16px;
-      font-weight: bold;
-      cursor: pointer;
-      width: 100%;
-      transition: background 0.2s;
-    }
-    .btn:hover {
-      background-color: var(--accent-hover);
-    }
-    .btn:disabled {
-      background-color: #555 !important;
-      color: #888;
-      cursor: not-allowed;
-    }
-    .form-group {
-      margin-bottom: 15px;
-    }
-    label {
-      display: block;
-      margin-bottom: 5px;
-      color: var(--text-muted);
-    }
-    input[type="text"], input[type="number"] {
-      width: 100%;
-      padding: 10px;
-      border-radius: 6px;
-      border: 1px solid #444;
-      background-color: #111;
-      color: #fff;
-      box-sizing: border-box;
-    }
-    /* TRACK DISPLAY STYLES */
-    .track-container {
-      display: flex;
-      justify-content: space-between;
-      gap: 8px;
-      margin: 20px 0;
-    }
-    .track-segment {
-      flex: 1;
-      background: #1e1e1e;
-      border: 2px solid #444;
-      border-radius: 8px;
-      padding: 10px 4px;
-      text-align: center;
-      transition: all 0.3s;
-    }
-    .track-segment.completed {
-      background: var(--segment-complete);
-      border-color: #81c784;
-      box-shadow: 0 0 10px var(--segment-complete);
-    }
-    .track-segment .seg-title {
-      font-size: 0.85rem;
-      text-transform: uppercase;
-      font-weight: bold;
-      margin-bottom: 5px;
-    }
-    .track-segment .seg-req {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-    }
-    .game-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 15px;
-      font-size: 1.2rem;
-      border-bottom: 2px solid #444;
-      padding-bottom: 10px;
-    }
-    .active-player-banner {
-      font-size: 1.8rem;
-      font-weight: bold;
-      text-align: center;
-      padding: 10px;
-      background: #111;
-      border-radius: 8px;
-      margin-bottom: 15px;
-      color: #ffeb3b;
-    }
-    .dart-display-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin: 15px 0;
-    }
-    .dart-display {
-      display: flex;
-      justify-content: center;
-      gap: 15px;
-      margin-bottom: 10px;
-    }
-    .dart-box {
-      width: 80px;
-      height: 45px;
-      border: 2px dashed #666;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      border-radius: 5px;
-      background: #111;
-      font-size: 1rem;
-    }
-    .turn-total {
-      font-weight: bold;
-      font-size: 1.1rem;
-      color: #ffeb3b;
-    }
-    .controls-grid {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 8px;
-      margin-top: 15px;
-    }
-    .btn-pad {
-      padding: 12px 5px;
-      font-weight: bold;
-      border-radius: 5px;
-      border: none;
-      background: #444;
-      color: #fff;
-      cursor: pointer;
-      font-size: 0.95rem;
-    }
-    .btn-pad:hover {
-      background: #666;
-    }
-    .btn-pad.modifier {
-      background: #0288d1;
-    }
-    .btn-pad.modifier.active {
-      background: #00bcd4;
-      box-shadow: 0 0 8px #00bcd4;
-    }
-    .btn-pad.color-white {
-      background: #eee;
-      color: #111;
-    }
-    .btn-pad.color-red {
-      background: #d32f2f;
-      color: #fff;
-    }
-    .btn-pad.color-green {
-      background: #388e3c;
-      color: #fff;
-    }
-    .btn-pad.color-black {
-      background: #111;
-      color: #fff;
-      border: 1px solid #555;
-    }
-    .btn-pad.action {
-      background: #f57c00;
-    }
-    .btn-undo {
-      background: #d32f2f;
-      color: #fff;
-      grid-column: span 5;
-      font-size: 1rem;
-      padding: 10px;
-      margin-top: 5px;
-    }
-    .advance-btn {
-      background: #388e3c;
-      color: white;
-      font-size: 1.1rem;
-      padding: 15px;
-      margin-top: 15px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 15px;
-    }
-    th, td {
-      padding: 10px;
-      text-align: left;
-      border-bottom: 1px solid #444;
-    }
-    th {
-      background: #111;
-      color: var(--text-muted);
-    }
-  </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Race Track Dart Game - Queensland</title>
+    <style>
+        :root {
+            --bg-color: #1a1a1d;
+            --card-bg: #2d2d30;
+            --accent: #e50914;
+            --accent-hover: #b20710;
+            --text: #ffffff;
+            --text-muted: #aaaaaa;
+            --segment-complete: #4caf50;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            width: 100%;
+            max-width: 900px;
+        }
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        }
+        .hidden {
+            display: none !important;
+        }
+        h1, h2, h3 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--accent);
+        }
+        .btn {
+            background-color: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.2s;
+        }
+        .btn:hover {
+            background-color: var(--accent-hover);
+        }
+        .btn:disabled {
+            background-color: #555 !important;
+            color: #888;
+            cursor: not-allowed;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--text-muted);
+        }
+        input[type="text"], input[type="number"], select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #444;
+            background-color: #111;
+            color: #fff;
+            box-sizing: border-box;
+        }
+        
+        /* TRACK DISPLAY STYLES */
+        .track-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            margin: 20px 0;
+        }
+        .track-segment {
+            flex: 1;
+            background: #1e1e1e;
+            border: 2px solid #444;
+            border-radius: 8px;
+            padding: 10px 4px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        .track-segment.completed {
+            background: var(--segment-complete);
+            border-color: #81c784;
+            box-shadow: 0 0 10px var(--segment-complete);
+        }
+        .track-segment .seg-title {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .track-segment .seg-req {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            border-bottom: 2px solid #444;
+            padding-bottom: 10px;
+        }
+        .active-player-banner {
+            font-size: 1.8rem;
+            font-weight: bold;
+            text-align: center;
+            padding: 10px;
+            background: #111;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            color: #ffeb3b;
+        }
+        .dart-display-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 15px 0;
+        }
+        .dart-display {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+        .dart-box {
+            width: 80px;
+            height: 45px;
+            border: 2px dashed #666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            border-radius: 5px;
+            background: #111;
+            font-size: 1rem;
+        }
+        .turn-total {
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #ffeb3b;
+        }
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            margin-top: 15px;
+        }
+        .btn-pad {
+            padding: 12px 5px;
+            font-weight: bold;
+            border-radius: 5px;
+            border: none;
+            background: #444;
+            color: #fff;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+        .btn-pad:hover {
+            background: #666;
+        }
+        .btn-pad.modifier {
+            background: #0288d1;
+        }
+        .btn-pad.modifier.active {
+            background: #00bcd4;
+            box-shadow: 0 0 8px #00bcd4;
+        }
+        .btn-pad.color-white {
+            background: #eee;
+            color: #111;
+        }
+        .btn-pad.color-red {
+            background: #d32f2f;
+            color: #fff;
+        }
+        .btn-pad.color-green {
+            background: #388e3c;
+            color: #fff;
+        }
+        .btn-pad.color-black {
+            background: #111;
+            color: #fff;
+            border: 1px solid #555;
+        }
+        .btn-pad.action {
+            background: #f57c00;
+        }
+        .btn-undo {
+            background: #d32f2f;
+            color: #fff;
+            grid-column: span 5;
+            font-size: 1rem;
+            padding: 10px;
+            margin-top: 5px;
+        }
+        .advance-btn {
+            background: #388e3c;
+            color: white;
+            font-size: 1.1rem;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #444;
+        }
+        th {
+            background: #111;
+            color: var(--text-muted);
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
+
+<div class="container">
     <!-- SETUP CARD -->
     <div id="setup-card" class="card">
-      <h1>🏁 Race Track Dart Game - Queensland 🏁</h1>
-      <div class="form-group">
-        <label>Player Names (Comma Separated):</label>
-        <input type="text" id="player-names-input" placeholder="e.g. Alice, Bob, Charlie">
-      </div>
-      <div class="form-group">
-        <label>Target Laps:</label>
-        <input type="number" id="target-laps-input" min="1" max="10" value="2">
-      </div>
-      <button class="btn" onclick="startGame()">🚀 Start Game</button>
+        <h1>🏁 Race Track Dart Game - Queensland 🏁</h1>
+        <div class="form-group">
+            <label>Player Names (Comma Separated):</label>
+            <input type="text" id="player-names-input" placeholder="e.g. Alice, Bob, Charlie">
+        </div>
+        <div class="form-group">
+            <label>Target Laps:</label>
+            <input type="number" id="target-laps-input" min="1" max="10" value="2">
+        </div>
+        <div class="form-group">
+            <label>Board Type:</label>
+            <select id="board-type-input">
+                <option value="basic">Basic Board</option>
+                <option value="quad">Quad Board</option>
+            </select>
+        </div>
+        <button class="btn" onclick="startGame()">🚀 Start Game</button>
     </div>
 
     <!-- GAME CARD -->
     <div id="game-card" class="card hidden">
-      <h2>🏁 Race Track Dart Game - Queensland 🏁</h2>
-      <div class="game-header">
-        <div>Round: <span id="rt-round-num">1</span></div>
-        <div>Target Laps: <span id="rt-target-laps">2</span></div>
-      </div>
-      <div id="rt-active-banner" class="active-player-banner">PLAYER 1'S TURN</div>
-      
-      <h3>Current Lap Progress</h3>
-      <div class="track-container">
-        <div class="track-segment" id="rt-seg-1">
-          <div class="seg-title">Seg 1</div>
-          <div class="seg-req">25 Pts</div>
+        <h2>🏁 Race Track Dart Game - Queensland 🏁</h2>
+        <div class="game-header">
+            <div>Round: <span id="rt-round-num">1</span></div>
+            <div>Target Laps: <span id="rt-target-laps">2</span></div>
+            <div>Board: <span id="rt-board-type">Basic</span></div>
         </div>
-        <div class="track-segment" id="rt-seg-2">
-          <div class="seg-title">Seg 2</div>
-          <div class="seg-req">40 Pts</div>
-        </div>
-        <div class="track-segment" id="rt-seg-3">
-          <div class="seg-title">Seg 3</div>
-          <div class="seg-req">60+ Pts</div>
-        </div>
-        <div class="track-segment" id="rt-seg-4">
-          <div class="seg-title">Seg 4</div>
-          <div class="seg-req">75+ Pts</div>
-        </div>
-        <div class="track-segment" id="rt-seg-5">
-          <div class="seg-title">Seg 5</div>
-          <div class="seg-req">110+ Pts / 6 Darts</div>
-        </div>
-        <div class="track-segment" id="rt-seg-6">
-          <div class="seg-title">Seg 6</div>
-          <div class="seg-req">All 1 Color</div>
-        </div>
-      </div>
 
-      <div class="dart-display-container">
-        <div class="dart-display">
-          <div class="dart-box" id="rt-dart-1">-</div>
-          <div class="dart-box" id="rt-dart-2">-</div>
-          <div class="dart-box" id="rt-dart-3">-</div>
+        <div id="rt-active-banner" class="active-player-banner">PLAYER 1'S TURN</div>
+
+        <h3>Current Lap Progress</h3>
+        <div class="track-container">
+            <div class="track-segment" id="rt-seg-1">
+                <div class="seg-title">Seg 1</div>
+                <div class="seg-req">25 Pts</div>
+            </div>
+            <div class="track-segment" id="rt-seg-2">
+                <div class="seg-title">Seg 2</div>
+                <div class="seg-req">40 Pts</div>
+            </div>
+            <div class="track-segment" id="rt-seg-3">
+                <div class="seg-title">Seg 3</div>
+                <div class="seg-req">60+ Pts</div>
+            </div>
+            <div class="track-segment" id="rt-seg-4">
+                <div class="seg-title">Seg 4</div>
+                <div class="seg-req">75+ Pts</div>
+            </div>
+            <div class="track-segment" id="rt-seg-5">
+                <div class="seg-title">Seg 5</div>
+                <div class="seg-req">110+ Pts / 6 Darts</div>
+            </div>
+            <div class="track-segment" id="rt-seg-6">
+                <div class="seg-title">Seg 6</div>
+                <div class="seg-req">All 1 Color</div>
+            </div>
         </div>
-        <div class="turn-total">Turn Score: <span id="rt-turn-score">0</span></div>
-      </div>
 
-      <div class="controls-grid" id="rt-controls">
-        <!-- Dynamic keypad & color controls injected here -->
-      </div>
-      
-      <button class="btn advance-btn" id="rt-btn-advance" disabled onclick="advanceTurn()">Advance Turn ➡️</button>
+        <div class="dart-display-container">
+            <div class="dart-display">
+                <div class="dart-box" id="rt-dart-1">-</div>
+                <div class="dart-box" id="rt-dart-2">-</div>
+                <div class="dart-box" id="rt-dart-3">-</div>
+            </div>
+            <div class="turn-total">Turn Score: <span id="rt-turn-score">0</span></div>
+        </div>
 
-      <h3 style="margin-top:25px;">Vertical Scoreboard</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Score / Status</th>
-            <th id="player-headers">Players</th>
-          </tr>
-        </thead>
-        <tbody id="vertical-scoreboard-body">
-          <!-- Scores aligned in columns per player -->
-        </tbody>
-      </table>
+        <div class="controls-grid" id="rt-controls">
+            <!-- Dynamic keypad & color controls injected here -->
+        </div>
+
+        <button class="btn advance-btn" id="rt-btn-advance" disabled onclick="advanceTurn()">Advance Turn ➡️</button>
+
+        <h3 style="margin-top:25px;">Vertical Scoreboard</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Score / Status</th>
+                    <th id="player-headers">Players</th>
+                </tr>
+            </thead>
+            <tbody id="vertical-scoreboard-body">
+                <!-- Scores aligned in columns per player -->
+            </tbody>
+        </table>
     </div>
-  </div>
+</div>
 
-  <script>
+<script>
     let gameState = {
-      targetLaps: 2,
-      currentRound: 1,
-      currentPlayerIndex: 0,
-      players: [],
-      darts: [],
-      activeModifier: 1
+        targetLaps: 2,
+        boardType: 'basic',
+        currentRound: 1,
+        currentPlayerIndex: 0,
+        players: [],
+        darts: [],
+        activeModifier: 1
     };
 
     function startGame() {
-      const input = document.getElementById('player-names-input').value;
-      const playerNames = input.split(',').map(name => name.trim()).filter(name => name.length > 0);
-      if (playerNames.length === 0) {
-        alert('Please enter at least one player name!');
-        return;
-      }
-      gameState.targetLaps = parseInt(document.getElementById('target-laps-input').value) || 2;
-      gameState.currentRound = 1;
-      gameState.currentPlayerIndex = 0;
-      gameState.darts = [];
-      gameState.activeModifier = 1;
-      gameState.players = playerNames.map(name => ({
-        name: name,
-        laps: 0,
-        currentSegment: 1,
-        seg5Progress: 0,
-        seg5DartsUsed: 0
-      }));
+        const input = document.getElementById('player-names-input').value;
+        const playerNames = input.split(',').map(name => name.trim()).filter(name => name.length > 0);
+        
+        if (playerNames.length === 0) {
+            alert('Please enter at least one player name!');
+            return;
+        }
 
-      document.getElementById('setup-card').classList.add('hidden');
-      document.getElementById('game-card').classList.remove('hidden');
-      document.getElementById('rt-target-laps').innerText = gameState.targetLaps;
-      updateUI();
+        gameState.targetLaps = parseInt(document.getElementById('target-laps-input').value) || 2;
+        gameState.boardType = document.getElementById('board-type-input').value;
+        gameState.currentRound = 1;
+        gameState.currentPlayerIndex = 0;
+        gameState.darts = [];
+        gameState.activeModifier = 1;
+        
+        gameState.players = playerNames.map(name => ({
+            name: name,
+            laps: 0,
+            currentSegment: 1,
+            seg5Progress: 0,
+            seg5DartsUsed: 0
+        }));
+
+        document.getElementById('setup-card').classList.add('hidden');
+        document.getElementById('game-card').classList.remove('hidden');
+        
+        document.getElementById('rt-target-laps').innerText = gameState.targetLaps;
+        document.getElementById('rt-board-type').innerText = gameState.boardType === 'quad' ? 'Quad' : 'Basic';
+        
+        updateUI();
     }
 
     function updateUI() {
-      const p = gameState.players[gameState.currentPlayerIndex];
-      document.getElementById('rt-round-num').innerText = gameState.currentRound;
-      document.getElementById('rt-active-banner').innerText = `${p.name.toUpperCase()}'S TURN`;
+        const p = gameState.players[gameState.currentPlayerIndex];
+        
+        document.getElementById('rt-round-num').innerText = gameState.currentRound;
+        document.getElementById('rt-active-banner').innerText = `${p.name.toUpperCase()}'S TURN`;
 
-      // Update Track Segment visual state
-      for (let i = 1; i <= 6; i++) {
-        const segBox = document.getElementById(`rt-seg-${i}`);
-        segBox.classList.toggle('completed', i < p.currentSegment);
-      }
-
-      // Display Darts thrown this turn
-      for (let i = 1; i <= 3; i++) {
-        const dartBox = document.getElementById(`rt-dart-${i}`);
-        if (gameState.darts[i - 1]) {
-          const d = gameState.darts[i - 1];
-          dartBox.innerText = d.label || d.val || d.color;
-        } else {
-          dartBox.innerText = '-';
+        // Update Track Segment visual state
+        for (let i = 1; i <= 6; i++) {
+            const segBox = document.getElementById(`rt-seg-${i}`);
+            segBox.classList.toggle('completed', i < p.currentSegment);
         }
-      }
 
-      // Calculate Turn Total Score
-      const turnTotal = gameState.darts.reduce((acc, curr) => acc + (curr.val || 0), 0);
-      document.getElementById('rt-turn-score').innerText = turnTotal;
+        // Display Darts thrown this turn
+        for (let i = 1; i <= 3; i++) {
+            const dartBox = document.getElementById(`rt-dart-${i}`);
+            if (gameState.darts[i - 1]) {
+                const d = gameState.darts[i - 1];
+                dartBox.innerText = d.label || d.val || d.color;
+            } else {
+                dartBox.innerText = '-';
+            }
+        }
 
-      // Render Dynamic Keypad Buttons
-      renderControls(p.currentSegment);
+        // Calculate Turn Total Score
+        const turnTotal = gameState.darts.reduce((acc, curr) => acc + (curr.val || 0), 0);
+        document.getElementById('rt-turn-score').innerText = turnTotal;
 
-      // Render Vertical Scoreboard
-      renderVerticalScoreboard();
+        // Render Dynamic Keypad Buttons
+        renderControls(p.currentSegment);
 
-      // Enable Advance button if 3 darts entered
-      document.getElementById('rt-btn-advance').disabled = gameState.darts.length < 3;
+        // Render Vertical Scoreboard
+        renderVerticalScoreboard();
+
+        // Enable Advance button if 3 darts entered
+        document.getElementById('rt-btn-advance').disabled = gameState.darts.length < 3;
     }
 
     function renderControls(currentSegment) {
-      const container = document.getElementById('rt-controls');
-      container.innerHTML = '';
+        const container = document.getElementById('rt-controls');
+        container.innerHTML = '';
 
-      if (gameState.darts.length >= 3) {
-        container.innerHTML = `
-          <div style="grid-column: 1 / -1; text-align:center; color:#81c784; font-weight:bold; padding:10px;">
-            Turn Complete! Click 'Advance Turn' to proceed.
-          </div>
-          <button class="btn-pad btn-undo" onclick="undoLastDart()">↩️ Undo Last Dart</button>
-        `;
-        return;
-      }
+        if (gameState.darts.length >= 3) {
+            container.innerHTML = `
+                <div style="grid-column: 1 / -1; text-align:center; color:#81c784; font-weight:bold; padding:10px;">
+                    Turn Complete! Click 'Advance Turn' to proceed.
+                </div>
+                <button class="btn-pad btn-undo" onclick="undoLastDart()">↩️ Undo Last Dart</button>
+            `;
+            return;
+        }
 
-      // SEGMENT 6: Render Color Buttons
-      if (currentSegment === 6) {
-        const colors = [
-          { name: 'Red', class: 'color-red' },
-          { name: 'Green', class: 'color-green' },
-          { name: 'White', class: 'color-white' },
-          { name: 'Black', class: 'color-black' },
-          { name: 'Miss', class: '' }
-        ];
-        colors.forEach(c => {
-          const btn = document.createElement('button');
-          btn.className = `btn-pad ${c.class}`;
-          btn.innerText = c.name;
-          btn.onclick = () => recordColorDart(c.name);
-          container.appendChild(btn);
-        });
+        // SEGMENT 6: Render Color Buttons
+        if (currentSegment === 6) {
+            const colors = [
+                { name: 'Red', class: 'color-red' },
+                { name: 'Green', class: 'color-green' },
+                { name: 'White', class: 'color-white' },
+                { name: 'Black', class: 'color-black' },
+                { name: 'Miss', class: '' }
+            ];
+
+            colors.forEach(c => {
+                const btn = document.createElement('button');
+                btn.className = `btn-pad ${c.class}`;
+                btn.innerText = c.name;
+                btn.onclick = () => recordColorDart(c.name);
+                container.appendChild(btn);
+            });
+
+            if (gameState.darts.length > 0) {
+                const undoBtn = document.createElement('button');
+                undoBtn.className = 'btn-pad btn-undo';
+                undoBtn.innerText = '↩️ Undo Last Dart';
+                undoBtn.onclick = undoLastDart;
+                container.appendChild(undoBtn);
+            }
+            return;
+        }
+
+        // SEGMENTS 1 - 5: Render Multipliers & Number Score Controls
+        const mod1 = document.createElement('button');
+        mod1.className = `btn-pad modifier ${gameState.activeModifier === 1 ? 'active' : ''}`;
+        mod1.innerText = 'Single (1x)';
+        mod1.onclick = () => setModifier(1);
+
+        const mod2 = document.createElement('button');
+        mod2.className = `btn-pad modifier ${gameState.activeModifier === 2 ? 'active' : ''}`;
+        mod2.innerText = 'Double (2x)';
+        mod2.onclick = () => setModifier(2);
+
+        const mod3 = document.createElement('button');
+        mod3.className = `btn-pad modifier ${gameState.activeModifier === 3 ? 'active' : ''}`;
+        mod3.innerText = 'Triple (3x)';
+        mod3.onclick = () => setModifier(3);
+
+        container.appendChild(mod1);
+        container.appendChild(mod2);
+        container.appendChild(mod3);
+
+        // If Quad Board selected, add Quad (4x) button
+        if (gameState.boardType === 'quad') {
+            const mod4 = document.createElement('button');
+            mod4.className = `btn-pad modifier ${gameState.activeModifier === 4 ? 'active' : ''}`;
+            mod4.innerText = 'Quad (4x)';
+            mod4.onclick = () => setModifier(4);
+            container.appendChild(mod4);
+        }
+
+        // Bull set to 50 pts (Single Bull button only)
+        const bull = document.createElement('button');
+        bull.className = 'btn-pad action';
+        bull.innerText = 'Bull (50)';
+        bull.onclick = () => recordScoreDart(50, 'Bull');
+        container.appendChild(bull);
+
+        // Numeric Point Pads (1 to 20)
+        for (let i = 1; i <= 20; i++) {
+            const btn = document.createElement('button');
+            btn.className = 'btn-pad';
+            const val = i * gameState.activeModifier;
+            const prefix = gameState.activeModifier === 2 ? 'D' : gameState.activeModifier === 3 ? 'T' : gameState.activeModifier === 4 ? 'Q' : '';
+            btn.innerText = `${prefix}${i}`;
+            btn.onclick = () => recordScoreDart(val, `${prefix}${i}`);
+            container.appendChild(btn);
+        }
+
+        const miss = document.createElement('button');
+        miss.className = 'btn-pad action';
+        miss.innerText = 'Miss (0)';
+        miss.onclick = () => recordScoreDart(0, 'Miss');
+        container.appendChild(miss);
 
         if (gameState.darts.length > 0) {
-          const undoBtn = document.createElement('button');
-          undoBtn.className = 'btn-pad btn-undo';
-          undoBtn.innerText = '↩️ Undo Last Dart';
-          undoBtn.onclick = undoLastDart;
-          container.appendChild(undoBtn);
+            const undoBtn = document.createElement('button');
+            undoBtn.className = 'btn-pad btn-undo';
+            undoBtn.innerText = '↩️ Undo Last Dart';
+            undoBtn.onclick = undoLastDart;
+            container.appendChild(undoBtn);
         }
-        return;
-      }
-
-      // SEGMENTS 1 - 5: Render Multipliers & Number Score Controls
-      const mod1 = document.createElement('button');
-      mod1.className = `btn-pad modifier ${gameState.activeModifier === 1 ? 'active' : ''}`;
-      mod1.innerText = 'Single (1x)';
-      mod1.onclick = () => setModifier(1);
-
-      const mod2 = document.createElement('button');
-      mod2.className = `btn-pad modifier ${gameState.activeModifier === 2 ? 'active' : ''}`;
-      mod2.innerText = 'Double (2x)';
-      mod2.onclick = () => setModifier(2);
-
-      const mod3 = document.createElement('button');
-      mod3.className = `btn-pad modifier ${gameState.activeModifier === 3 ? 'active' : ''}`;
-      mod3.innerText = 'Triple (3x)';
-      mod3.onclick = () => setModifier(3);
-
-      container.appendChild(mod1);
-      container.appendChild(mod2);
-      container.appendChild(mod3);
-
-      // Both Outer Bull and Double Bull set to 50 pts
-      const bull = document.createElement('button');
-      bull.className = 'btn-pad action';
-      bull.innerText = 'Bull (50)';
-      bull.onclick = () => recordScoreDart(50, 'Bull');
-
-      const dbull = document.createElement('button');
-      dbull.className = 'btn-pad action';
-      dbull.innerText = 'D-Bull (50)';
-      dbull.onclick = () => recordScoreDart(50, 'D-Bull');
-
-      container.appendChild(bull);
-      container.appendChild(dbull);
-
-      // Numeric Point Pads (1 to 20)
-      for (let i = 1; i <= 20; i++) {
-        const btn = document.createElement('button');
-        btn.className = 'btn-pad';
-        const val = i * gameState.activeModifier;
-        const prefix = gameState.activeModifier === 2 ? 'D' : gameState.activeModifier === 3 ? 'T' : '';
-        btn.innerText = `${prefix}${i}`;
-        btn.onclick = () => recordScoreDart(val, `${prefix}${i}`);
-        container.appendChild(btn);
-      }
-
-      const miss = document.createElement('button');
-      miss.className = 'btn-pad action';
-      miss.innerText = 'Miss (0)';
-      miss.onclick = () => recordScoreDart(0, 'Miss');
-      container.appendChild(miss);
-
-      if (gameState.darts.length > 0) {
-        const undoBtn = document.createElement('button');
-        undoBtn.className = 'btn-pad btn-undo';
-        undoBtn.innerText = '↩️ Undo Last Dart';
-        undoBtn.onclick = undoLastDart;
-        container.appendChild(undoBtn);
-      }
     }
 
     function setModifier(mod) {
-      gameState.activeModifier = mod;
-      updateUI();
+        gameState.activeModifier = mod;
+        updateUI();
     }
 
     function recordScoreDart(baseVal, label) {
-      if (gameState.darts.length >= 3) return;
-      gameState.darts.push({ val: baseVal, label: label });
-      gameState.activeModifier = 1;
-      updateUI();
+        if (gameState.darts.length >= 3) return;
+        gameState.darts.push({ val: baseVal, label: label });
+        gameState.activeModifier = 1;
+        updateUI();
     }
 
     function recordColorDart(colorName) {
-      if (gameState.darts.length >= 3) return;
-      gameState.darts.push({ color: colorName, label: colorName, val: 0 });
-      updateUI();
+        if (gameState.darts.length >= 3) return;
+        gameState.darts.push({ color: colorName, label: colorName, val: 0 });
+        updateUI();
     }
 
     function undoLastDart() {
-      if (gameState.darts.length > 0) {
-        gameState.darts.pop();
-        gameState.activeModifier = 1;
-        updateUI();
-      }
+        if (gameState.darts.length > 0) {
+            gameState.darts.pop();
+            gameState.activeModifier = 1;
+            updateUI();
+        }
     }
 
     function renderVerticalScoreboard() {
-      const headerTr = document.getElementById('player-headers');
-      headerTr.innerHTML = '';
-      gameState.players.forEach(p => {
-        const th = document.createElement('th');
-        th.innerText = p.name;
-        headerTr.appendChild(th);
-      });
+        const headerTr = document.getElementById('player-headers');
+        headerTr.innerHTML = '';
+        gameState.players.forEach(p => {
+            const th = document.createElement('th');
+            th.innerText = p.name;
+            headerTr.appendChild(th);
+        });
 
-      const tbody = document.getElementById('vertical-scoreboard-body');
-      tbody.innerHTML = '';
+        const tbody = document.getElementById('vertical-scoreboard-body');
+        tbody.innerHTML = '';
 
-      // Row 1: Laps Completed
-      let lapTr = document.createElement('tr');
-      lapTr.innerHTML = `<td><strong>Laps Completed</strong></td>` + gameState.players.map(p => `<td>${p.laps} / ${gameState.targetLaps}</td>`).join('');
-      tbody.appendChild(lapTr);
+        // Row 1: Laps Completed
+        let lapTr = document.createElement('tr');
+        lapTr.innerHTML = `<td><strong>Laps Completed</strong></td>` + 
+            gameState.players.map(p => `<td>${p.laps} / ${gameState.targetLaps}</td>`).join('');
+        tbody.appendChild(lapTr);
 
-      // Row 2: Current Segment
-      let segTr = document.createElement('tr');
-      segTr.innerHTML = `<td><strong>Current Segment</strong></td>` + gameState.players.map(p => {
-        if (p.currentSegment === 5) {
-          return `<td>Seg 5 (${p.seg5Progress}/110 pts, ${p.seg5DartsUsed}/6 darts)</td>`;
-        }
-        return `<td>Seg ${p.currentSegment}</td>`;
-      }).join('');
-      tbody.appendChild(segTr);
+        // Row 2: Current Segment
+        let segTr = document.createElement('tr');
+        segTr.innerHTML = `<td><strong>Current Segment</strong></td>` + 
+            gameState.players.map(p => {
+                if (p.currentSegment === 5) {
+                    return `<td>Seg 5 (${p.seg5Progress}/110 pts, ${p.seg5DartsUsed}/6 darts)</td>`;
+                }
+                return `<td>Seg ${p.currentSegment}</td>`;
+            }).join('');
+        tbody.appendChild(segTr);
     }
 
     function advanceTurn() {
-      const p = gameState.players[gameState.currentPlayerIndex];
-      const turnTotal = gameState.darts.reduce((acc, curr) => acc + (curr.val || 0), 0);
+        const p = gameState.players[gameState.currentPlayerIndex];
+        const turnTotal = gameState.darts.reduce((acc, curr) => acc + (curr.val || 0), 0);
 
-      // Segment Requirement Evaluation Logic
-      if (p.currentSegment === 1 && turnTotal === 25) {
-        p.currentSegment = 2;
-      } else if (p.currentSegment === 2 && turnTotal === 40) {
-        p.currentSegment = 3;
-      } else if (p.currentSegment === 3 && turnTotal >= 60) {
-        p.currentSegment = 4;
-      } else if (p.currentSegment === 4 && turnTotal >= 75) {
-        p.currentSegment = 5;
-      } else if (p.currentSegment === 5) {
-        p.seg5Progress += turnTotal;
-        p.seg5DartsUsed += 3;
-        
-        if (p.seg5Progress >= 110 && p.seg5DartsUsed <= 6) {
-          p.currentSegment = 6;
-          p.seg5Progress = 0;
-          p.seg5DartsUsed = 0;
-        } else if (p.seg5DartsUsed >= 6) {
-          // Reset Seg 5 if 110+ pts not reached in 6 darts (2 rounds)
-          p.seg5Progress = 0;
-          p.seg5DartsUsed = 0;
+        // Segment Requirement Evaluation Logic
+        if (p.currentSegment === 1 && turnTotal === 25) {
+            p.currentSegment = 2;
+        } else if (p.currentSegment === 2 && turnTotal === 40) {
+            p.currentSegment = 3;
+        } else if (p.currentSegment === 3 && turnTotal >= 60) {
+            p.currentSegment = 4;
+        } else if (p.currentSegment === 4 && turnTotal >= 75) {
+            p.currentSegment = 5;
+        } else if (p.currentSegment === 5) {
+            p.seg5Progress += turnTotal;
+            p.seg5DartsUsed += 3;
+            if (p.seg5Progress >= 110 && p.seg5DartsUsed <= 6) {
+                p.currentSegment = 6;
+                p.seg5Progress = 0;
+                p.seg5DartsUsed = 0;
+            } else if (p.seg5DartsUsed >= 6) {
+                // Reset Seg 5 if 110+ pts not reached in 6 darts (2 rounds)
+                p.seg5Progress = 0;
+                p.seg5DartsUsed = 0;
+            }
+        } else if (p.currentSegment === 6 && gameState.darts.length === 3) {
+            const firstColor = gameState.darts[0].color;
+            const allSame = gameState.darts.every(d => d.color === firstColor && d.color !== 'Miss');
+            if (allSame) {
+                p.laps++;
+                p.currentSegment = 1;
+                if (p.laps >= gameState.targetLaps) {
+                    alert(`🎉 Congratulations ${p.name}! You won the race! 🎉`);
+                }
+            }
         }
-      } else if (p.currentSegment === 6 && gameState.darts.length === 3) {
-        const firstColor = gameState.darts[0].color;
-        const allSame = gameState.darts.every(d => d.color === firstColor && d.color !== 'Miss');
-        if (allSame) {
-          p.laps++;
-          p.currentSegment = 1;
-          if (p.laps >= gameState.targetLaps) {
-            alert(`🎉 Congratulations ${p.name}! You won the race! 🎉`);
-          }
-        }
-      }
 
-      gameState.darts = [];
-      gameState.activeModifier = 1;
-      gameState.currentPlayerIndex++;
-      if (gameState.currentPlayerIndex >= gameState.players.length) {
-        gameState.currentPlayerIndex = 0;
-        gameState.currentRound++;
-      }
-      updateUI();
+        gameState.darts = [];
+        gameState.activeModifier = 1;
+        gameState.currentPlayerIndex++;
+        if (gameState.currentPlayerIndex >= gameState.players.length) {
+            gameState.currentPlayerIndex = 0;
+            gameState.currentRound++;
+        }
+        updateUI();
     }
-  </script>
+</script>
+
 </body>
 </html>
