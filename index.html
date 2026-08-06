@@ -24,7 +24,7 @@
 
     .container {
       width: 100%;
-      max-width: 800px;
+      max-width: 850px;
     }
 
     .card {
@@ -118,32 +118,6 @@
       margin-bottom: 16px;
     }
 
-    .segment-tracker {
-      display: grid;
-      grid-template-columns: repeat(6, 1fr);
-      gap: 6px;
-      margin-bottom: 16px;
-    }
-
-    .seg-box {
-      background: #2b2b2b;
-      padding: 10px 4px;
-      text-align: center;
-      border-radius: 6px;
-      font-size: 12px;
-      border: 2px solid transparent;
-    }
-
-    .seg-box.active {
-      border-color: #03dac6;
-      background-color: #1b3835;
-    }
-
-    .seg-box.completed {
-      background-color: #1b5e20;
-      color: #a5d6a7;
-    }
-
     .dart-display {
       display: flex;
       justify-content: space-around;
@@ -190,6 +164,11 @@
       color: #fff;
     }
 
+    .btn-mult.active {
+      background-color: #03dac6;
+      color: #000;
+    }
+
     .btn-quad {
       background-color: #cf6679;
       color: #000;
@@ -206,7 +185,7 @@
     .color-white { background-color: #f5f5f5; color: #000; }
     .color-black { background-color: #212121; color: #fff; border: 1px solid #444; }
 
-    /* Vertical Scoreboard */
+    /* Vertical Scoreboard with aligned Laps & Segments */
     .scoreboard-table {
       width: 100%;
       border-collapse: collapse;
@@ -215,7 +194,7 @@
 
     .scoreboard-table th, .scoreboard-table td {
       border: 1px solid #444;
-      padding: 8px;
+      padding: 10px;
       text-align: center;
     }
 
@@ -224,8 +203,29 @@
       color: #bb86fc;
     }
 
+    .scoreboard-table tr.summary-row {
+      background-color: #1f2824;
+      font-weight: bold;
+    }
+
     .active-player-col {
-      background-color: #2a3a30;
+      background-color: #2a3a30 !important;
+      border-left: 2px solid #03dac6 !important;
+      border-right: 2px solid #03dac6 !important;
+    }
+
+    .badge-done {
+      color: #81c784;
+      font-weight: bold;
+    }
+
+    .badge-active {
+      background-color: #03dac6;
+      color: #000;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-weight: bold;
+      display: inline-block;
     }
   </style>
 </head>
@@ -278,15 +278,6 @@
 
     <div id="rt-active-banner" class="active-banner">PLAYER 1'S TURN</div>
 
-    <div class="segment-tracker">
-      <div id="rt-seg-1" class="seg-box">1: Turn<br>(25)</div>
-      <div id="rt-seg-2" class="seg-box">2: Straight<br>(40)</div>
-      <div id="rt-seg-3" class="seg-box">3: Turn<br>(60+)</div>
-      <div id="rt-seg-4" class="seg-box">4: Straight<br>(75+)</div>
-      <div id="rt-seg-5" class="seg-box">5: Pit<br>(110 in 6)</div>
-      <div id="rt-seg-6" class="seg-box">6: Finish<br>(Colors)</div>
-    </div>
-
     <div class="dart-display">
       <div id="rt-dart-1" class="dart-slot">-</div>
       <div id="rt-dart-2" class="dart-slot">-</div>
@@ -298,7 +289,7 @@
 
     <button id="rt-btn-advance" class="btn-action" style="margin-top:15px;" onclick="advanceTurn()" disabled>Advance Turn</button>
 
-    <h3 style="margin-top:20px;">Scoreboard</h3>
+    <h3 style="margin-top:20px;">Race Standings & Segment Alignment</h3>
     <div id="vertical-scoreboard"></div>
   </div>
 </div>
@@ -377,12 +368,6 @@
     document.getElementById('rt-round-num').innerText = gameState.currentRound;
     document.getElementById('rt-active-banner').innerText = `${p.name.toUpperCase()}'S TURN`;
 
-    for (let i = 1; i <= 6; i++) {
-      const segBox = document.getElementById(`rt-seg-${i}`);
-      segBox.classList.toggle('active', i === p.currentSegment);
-      segBox.classList.toggle('completed', i < p.currentSegment);
-    }
-
     for (let i = 1; i <= 3; i++) {
       const dartBox = document.getElementById(`rt-dart-${i}`);
       if (gameState.darts[i - 1]) {
@@ -441,10 +426,8 @@
       return;
     }
 
-    // Number Pad (0 to 20 + Bullseye)
     const nums = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25, 0];
     
-    // Multipliers
     const multDiv = document.createElement('div');
     multDiv.style.gridColumn = '1 / -1';
     multDiv.style.display = 'flex';
@@ -500,14 +483,14 @@
     if (gameState.darts.length >= 3) return;
 
     let mult = currentMultiplier;
-    if (baseVal === 25 && mult > 2) mult = 2; // Bullseye max is double
+    if (baseVal === 25 && mult > 2) mult = 2;
     if (baseVal === 0) mult = 1;
 
     const totalVal = baseVal * mult;
     const label = mult === 4 ? `Q${baseVal}` : mult === 3 ? `T${baseVal}` : mult === 2 ? `D${baseVal}` : `${baseVal}`;
 
     gameState.darts.push({ val: totalVal, label: label, base: baseVal, mult: mult });
-    currentMultiplier = 1; // Reset multiplier after throw
+    currentMultiplier = 1;
 
     evaluateSegmentProgress();
     updateUI();
@@ -547,7 +530,7 @@
     else if (p.currentSegment === 4 && turnVal >= 75) {
       p.currentSegment = 5;
     }
-    // Segment 5: 110 pts in 6 darts
+    // Segment 5: 110 in 6 darts
     else if (p.currentSegment === 5) {
       const accum = p.seg5Progress + turnVal;
       if (accum >= 110 && (p.seg5DartsUsed + gameState.darts.length) <= 6) {
@@ -559,12 +542,10 @@
   function advanceTurn() {
     const p = gameState.players[gameState.currentPlayerIndex];
 
-    // Commit segment 5 accumulation tracking if ended turn on segment 5
     if (p.currentSegment === 5) {
       p.seg5Progress += gameState.darts.reduce((acc, curr) => acc + (curr.val || 0), 0);
       p.seg5DartsUsed += gameState.darts.length;
       if (p.seg5DartsUsed >= 6 && p.seg5Progress < 110) {
-        // Reset segment 5 progress for next attempt
         p.seg5Progress = 0;
         p.seg5DartsUsed = 0;
       }
@@ -584,7 +565,7 @@
 
   function renderVerticalScoreboard() {
     const container = document.getElementById('vertical-scoreboard');
-    let html = `<table class="scoreboard-table"><thead><tr><th>Target / Segment</th>`;
+    let html = `<table class="scoreboard-table"><thead><tr><th>Track Segment</th>`;
 
     gameState.players.forEach((p, idx) => {
       const isActive = idx === gameState.currentPlayerIndex ? 'class="active-player-col"' : '';
@@ -592,29 +573,44 @@
     });
     html += `</tr></thead><tbody>`;
 
-    const targets = [
-      { id: 1, name: '1: Turn (25)' },
-      { id: 2, name: '2: Straight (40)' },
-      { id: 3, name: '3: Turn (60+)' },
-      { id: 4, name: '4: Straight (75+)' },
-      { id: 5, name: '5: Pit (110 in 6)' },
-      { id: 6, name: '6: Finish (Colors)' },
-      { id: 7, name: 'Laps Completed' }
+    // Summary Rows at Top for Aligned Tracking
+    html += `<tr class="summary-row"><td><strong>Laps Completed</strong></td>`;
+    gameState.players.forEach((p, idx) => {
+      const isActive = idx === gameState.currentPlayerIndex ? 'class="active-player-col"' : '';
+      html += `<td ${isActive}><strong>${p.laps} / ${gameState.targetLaps}</strong></td>`;
+    });
+    html += `</tr>`;
+
+    html += `<tr class="summary-row"><td><strong>Active Position</strong></td>`;
+    gameState.players.forEach((p, idx) => {
+      const isActive = idx === gameState.currentPlayerIndex ? 'class="active-player-col"' : '';
+      html += `<td ${isActive}><span class="badge-active">Seg ${p.currentSegment}</span></td>`;
+    });
+    html += `</tr>`;
+
+    // Segment Rows
+    const segments = [
+      { id: 1, name: '1: Turn (25 pts)' },
+      { id: 2, name: '2: Straight (40 pts)' },
+      { id: 3, name: '3: Turn (60+ pts)' },
+      { id: 4, name: '4: Straight (75+ pts)' },
+      { id: 5, name: '5: Pit (110 in 6 darts)' },
+      { id: 6, name: '6: Finish (Colors)' }
     ];
 
-    targets.forEach(t => {
-      html += `<tr><td><strong>${t.name}</strong></td>`;
+    segments.forEach(seg => {
+      html += `<tr><td><strong>${seg.name}</strong></td>`;
       gameState.players.forEach((p, idx) => {
         const isActive = idx === gameState.currentPlayerIndex ? 'class="active-player-col"' : '';
-        let val = '—';
-        if (t.id === 7) {
-          val = `${p.laps} / ${gameState.targetLaps}`;
-        } else if (p.currentSegment > t.id) {
-          val = '✅';
-        } else if (p.currentSegment === t.id) {
-          val = t.id === 5 ? `In Progress (${p.seg5Progress}/110)` : '🎯 Active';
+        let status = '—';
+        if (p.currentSegment > seg.id) {
+          status = '<span class="badge-done">✅ Cleared</span>';
+        } else if (p.currentSegment === seg.id) {
+          status = seg.id === 5 
+            ? `<span class="badge-active">${p.seg5Progress}/110</span>` 
+            : `<span class="badge-active">🎯 Target</span>`;
         }
-        html += `<td ${isActive}>${val}</td>`;
+        html += `<td ${isActive}>${status}</td>`;
       });
       html += `</tr>`;
     });
