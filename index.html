@@ -59,6 +59,7 @@
             cursor: pointer;
             width: 100%;
             transition: background 0.2s;
+            margin-top: 10px;
         }
         .btn:hover {
             background-color: var(--accent-hover);
@@ -69,21 +70,29 @@
             cursor: not-allowed;
         }
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 18px;
+            display: flex;
+            flex-direction: column;
         }
         label {
             display: block;
-            margin-bottom: 5px;
-            color: var(--text-muted);
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text);
         }
         input[type="text"], input[type="number"], select {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             border-radius: 6px;
             border: 1px solid #444;
             background-color: #111;
             color: #fff;
+            font-size: 1rem;
             box-sizing: border-box;
+        }
+        select option {
+            background-color: #111;
+            color: #fff;
         }
         
         /* TRACK DISPLAY STYLES */
@@ -249,15 +258,15 @@
     <div id="setup-card" class="card">
         <h1>🏁 Race Track Dart Game - Queensland 🏁</h1>
         <div class="form-group">
-            <label>Player Names (Comma Separated):</label>
+            <label for="player-names-input">Player Names (Comma Separated):</label>
             <input type="text" id="player-names-input" placeholder="e.g. Alice, Bob, Charlie">
         </div>
         <div class="form-group">
-            <label>Target Laps:</label>
+            <label for="target-laps-input">Target Laps:</label>
             <input type="number" id="target-laps-input" min="1" max="10" value="2">
         </div>
         <div class="form-group">
-            <label>Board Type:</label>
+            <label for="board-type-input">Board Type:</label>
             <select id="board-type-input">
                 <option value="basic">Basic Board</option>
                 <option value="quad">Quad Board</option>
@@ -385,13 +394,11 @@
         document.getElementById('rt-round-num').innerText = gameState.currentRound;
         document.getElementById('rt-active-banner').innerText = `${p.name.toUpperCase()}'S TURN`;
 
-        // Update Track Segment visual state
         for (let i = 1; i <= 6; i++) {
             const segBox = document.getElementById(`rt-seg-${i}`);
             segBox.classList.toggle('completed', i < p.currentSegment);
         }
 
-        // Display Darts thrown this turn
         for (let i = 1; i <= 3; i++) {
             const dartBox = document.getElementById(`rt-dart-${i}`);
             if (gameState.darts[i - 1]) {
@@ -402,17 +409,12 @@
             }
         }
 
-        // Calculate Turn Total Score
         const turnTotal = gameState.darts.reduce((acc, curr) => acc + (curr.val || 0), 0);
         document.getElementById('rt-turn-score').innerText = turnTotal;
 
-        // Render Dynamic Keypad Buttons
         renderControls(p.currentSegment);
-
-        // Render Vertical Scoreboard
         renderVerticalScoreboard();
 
-        // Enable Advance button if 3 darts entered
         document.getElementById('rt-btn-advance').disabled = gameState.darts.length < 3;
     }
 
@@ -430,7 +432,6 @@
             return;
         }
 
-        // SEGMENT 6: Render Color Buttons
         if (currentSegment === 6) {
             const colors = [
                 { name: 'Red', class: 'color-red' },
@@ -458,7 +459,6 @@
             return;
         }
 
-        // SEGMENTS 1 - 5: Render Multipliers & Number Score Controls
         const mod1 = document.createElement('button');
         mod1.className = `btn-pad modifier ${gameState.activeModifier === 1 ? 'active' : ''}`;
         mod1.innerText = 'Single (1x)';
@@ -478,7 +478,6 @@
         container.appendChild(mod2);
         container.appendChild(mod3);
 
-        // If Quad Board selected, add Quad (4x) button
         if (gameState.boardType === 'quad') {
             const mod4 = document.createElement('button');
             mod4.className = `btn-pad modifier ${gameState.activeModifier === 4 ? 'active' : ''}`;
@@ -487,14 +486,12 @@
             container.appendChild(mod4);
         }
 
-        // Bull set to 50 pts (Single Bull button only)
         const bull = document.createElement('button');
         bull.className = 'btn-pad action';
         bull.innerText = 'Bull (50)';
         bull.onclick = () => recordScoreDart(50, 'Bull');
         container.appendChild(bull);
 
-        // Numeric Point Pads (1 to 20)
         for (let i = 1; i <= 20; i++) {
             const btn = document.createElement('button');
             btn.className = 'btn-pad';
@@ -558,13 +555,11 @@
         const tbody = document.getElementById('vertical-scoreboard-body');
         tbody.innerHTML = '';
 
-        // Row 1: Laps Completed
         let lapTr = document.createElement('tr');
         lapTr.innerHTML = `<td><strong>Laps Completed</strong></td>` + 
             gameState.players.map(p => `<td>${p.laps} / ${gameState.targetLaps}</td>`).join('');
         tbody.appendChild(lapTr);
 
-        // Row 2: Current Segment
         let segTr = document.createElement('tr');
         segTr.innerHTML = `<td><strong>Current Segment</strong></td>` + 
             gameState.players.map(p => {
@@ -580,7 +575,6 @@
         const p = gameState.players[gameState.currentPlayerIndex];
         const turnTotal = gameState.darts.reduce((acc, curr) => acc + (curr.val || 0), 0);
 
-        // Segment Requirement Evaluation Logic
         if (p.currentSegment === 1 && turnTotal === 25) {
             p.currentSegment = 2;
         } else if (p.currentSegment === 2 && turnTotal === 40) {
@@ -597,7 +591,6 @@
                 p.seg5Progress = 0;
                 p.seg5DartsUsed = 0;
             } else if (p.seg5DartsUsed >= 6) {
-                // Reset Seg 5 if 110+ pts not reached in 6 darts (2 rounds)
                 p.seg5Progress = 0;
                 p.seg5DartsUsed = 0;
             }
