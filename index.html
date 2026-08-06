@@ -81,19 +81,22 @@
             color: var(--text);
         }
         input[type="text"], input[type="number"], select {
-            width: 100%;
-            padding: 12px;
-            border-radius: 6px;
-            border: 1px solid #444;
-            background-color: #111;
-            color: #fff;
-            font-size: 1rem;
-            box-sizing: border-box;
-        }
-        select option {
-            background-color: #111;
-            color: #fff;
-        }
+    width: 100%;
+    padding: 12px;
+    border-radius: 6px;
+    border: 1px solid #444;
+    background-color: #111;
+    color: #ffffff;
+    font-size: 1rem;
+    box-sizing: border-box;
+    appearance: auto; /* Ensures standard dropdown arrow renders across operating systems */
+}
+
+/* Fix dropdown option contrast across OS/browser themes */
+select option {
+    background-color: #2d2d30;
+    color: #ffffff;
+}
         
         /* TRACK DISPLAY STYLES */
         .track-container {
