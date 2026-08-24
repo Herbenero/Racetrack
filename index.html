@@ -543,13 +543,12 @@ container.appendChild(undoBtn);
   const p = gameState.players[gameState.currentPlayerIndex];
   
   if (p.currentSegment === 5) {
-    // If they were already in Segment 5 before throwing this turn's darts
     p.seg5Progress += gameState.darts.reduce((acc, curr) => acc + (curr.val || 0), 0);
     p.seg5DartsUsed += gameState.darts.length;
 
-    // Reset progress to 90 if they fail to reach 110 within 6 darts
+    // If 6 darts are reached without accumulating 110 pts, reset to 0
     if (p.seg5DartsUsed >= 6 && p.seg5Progress < 110) {
-      p.seg5Progress = 90;
+      p.seg5Progress = 0;
       p.seg5DartsUsed = 0;
     }
   }
@@ -565,7 +564,6 @@ container.appendChild(undoBtn);
   
   updateUI();
 }
-
   function renderVerticalScoreboard() {
     const container = document.getElementById('vertical-scoreboard');
     let html = `<table class="scoreboard-table"><thead><tr><th>Track Segment</th>`;
