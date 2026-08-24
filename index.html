@@ -391,15 +391,15 @@
     const container = document.getElementById('rt-controls');
     container.innerHTML = '';
 
-    if (gameState.darts.length >= 3) {
-      container.innerHTML = `
-        <div style="grid-column: 1 / -1; text-align:center; color:#81c784; font-weight:bold; padding:10px;">
-          Turn Complete! Click 'Advance Turn' to proceed.
-        </div>
-        <button class="btn-pad btn-undo" onclick="undoLastDart()">↩️ Undo Last Dart</button>
-      `;
-      return;
-    }
+    const undoBtn = document.createElement('button');
+undoBtn.className = 'btn-pad btn-undo';
+undoBtn.innerText = '↩️ Undo Last Dart';
+undoBtn.onclick = undoLastDart;
+if (gameState.darts.length === 0) {
+  undoBtn.disabled = true;
+  undoBtn.style.opacity = '0.5';
+}
+container.appendChild(undoBtn);
 
     if (currentSegment === 6) {
       const colors = [
