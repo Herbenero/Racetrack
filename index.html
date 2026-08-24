@@ -384,7 +384,7 @@
     renderControls(p.currentSegment);
     renderVerticalScoreboard();
 
-    document.getElementById('rt-btn-advance').disabled = gameState.darts.length < 3;
+    document.getElementById('rt-btn-advance').disabled = gameState.darts.length === 0;
   }
 
   function renderControls(currentSegment) {
