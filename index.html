@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Racetrack- Queensland</title>
+  <title>Racetrack - Queensland</title>
   <style>
     * {
       box-sizing: border-box;
@@ -214,7 +214,7 @@
 </head>
 <body>
   <div class="container">
-    <h1>🏁 Racetrack- Queensland 🏁</h1>
+    <h1>🏁 Racetrack - Queensland 🏁</h1>
 
     <!-- SETUP CARD -->
     <div id="setup-card" class="card">
@@ -499,7 +499,6 @@
       } 
       // Segment 5: 110 in 6 darts
       else if (p.currentSegment === 5) {
-        // If Segment 5 was started during this turn, only throw progress counts toward 110
         const currentTurnSeg5Darts = p.startSegmentThisTurn === 5 ? gameState.darts.length : 0;
         const currentTurnSeg5Val = p.startSegmentThisTurn === 5 ? turnVal : 0;
         
@@ -510,12 +509,31 @@
           p.currentSegment = 6;
         }
       }
+      // Segment 6: Finish (3 of the same color, not Miss)
+      else if (p.currentSegment === 6) {
+        if (gameState.darts.length === 3) {
+          const d1 = gameState.darts[0].color;
+          const d2 = gameState.darts[1].color;
+          const d3 = gameState.darts[2].color;
+
+          if (d1 && d1 !== 'Miss' && d1 === d2 && d2 === d3) {
+            p.laps++;
+            if (p.laps >= gameState.targetLaps) {
+              alert(`🎉 CONGRATULATIONS! ${p.name} HAS WON THE RACE! 🎉`);
+            } else {
+              alert(`🏁 ${p.name} completed Lap ${p.laps}! Starting Lap ${p.laps + 1}.`);
+              p.currentSegment = 1; // Loop back to Segment 1 for the next lap
+              p.seg5Progress = 0;
+              p.seg5DartsUsed = 0;
+            }
+          }
+        }
+      }
     }
 
     function advanceTurn() {
       const p = gameState.players[gameState.currentPlayerIndex];
 
-      // Only accumulate darts/points into Segment 5 if the player actually started their turn in Segment 5
       if (p.currentSegment === 5 && p.startSegmentThisTurn === 5) {
         p.seg5Progress += gameState.darts.reduce((acc, curr) => acc + (curr.val || 0), 0);
         p.seg5DartsUsed += gameState.darts.length;
@@ -536,7 +554,6 @@
         gameState.currentRound++;
       }
 
-      // Track the segment state for the incoming player at turn start
       const nextPlayer = gameState.players[gameState.currentPlayerIndex];
       nextPlayer.startSegmentThisTurn = nextPlayer.currentSegment;
 
