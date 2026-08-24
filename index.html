@@ -540,28 +540,31 @@ container.appendChild(undoBtn);
   }
 
   function advanceTurn() {
-    const p = gameState.players[gameState.currentPlayerIndex];
+  const p = gameState.players[gameState.currentPlayerIndex];
+  
+  if (p.currentSegment === 5) {
+    // If they were already in Segment 5 before throwing this turn's darts
+    p.seg5Progress += gameState.darts.reduce((acc, curr) => acc + (curr.val || 0), 0);
+    p.seg5DartsUsed += gameState.darts.length;
 
-    if (p.currentSegment === 5) {
-      p.seg5Progress += gameState.darts.reduce((acc, curr) => acc + (curr.val || 0), 0);
-      p.seg5DartsUsed += gameState.darts.length;
-      if (p.seg5DartsUsed >= 6 && p.seg5Progress < 110) {
-        p.seg5Progress = 0;
-        p.seg5DartsUsed = 0;
-      }
+    // Reset progress to 90 if they fail to reach 110 within 6 darts
+    if (p.seg5DartsUsed >= 6 && p.seg5Progress < 110) {
+      p.seg5Progress = 90;
+      p.seg5DartsUsed = 0;
     }
-
-    gameState.darts = [];
-    currentMultiplier = 1;
-
-    gameState.currentPlayerIndex++;
-    if (gameState.currentPlayerIndex >= gameState.players.length) {
-      gameState.currentPlayerIndex = 0;
-      gameState.currentRound++;
-    }
-
-    updateUI();
   }
+
+  gameState.darts = [];
+  currentMultiplier = 1;
+  gameState.currentPlayerIndex++;
+  
+  if (gameState.currentPlayerIndex >= gameState.players.length) {
+    gameState.currentPlayerIndex = 0;
+    gameState.currentRound++;
+  }
+  
+  updateUI();
+}
 
   function renderVerticalScoreboard() {
     const container = document.getElementById('vertical-scoreboard');
