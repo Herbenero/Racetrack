@@ -317,6 +317,7 @@
       gameState.currentPlayerIndex = 0;
       gameState.darts = [];
       currentMultiplier = 1;
+
       gameState.players = playerNames.map(name => ({
         name: name,
         laps: 0,
@@ -325,7 +326,9 @@
         seg5DartsUsed: 0,
         startSegmentThisTurn: 1,
         isWinner: false,
-        segmentLaps: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 }
+        currentSegmentRounds: 1, // Round counter for active segment
+        segmentLaps: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 }, // Lap completions
+        segmentRoundsTotal: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 } // Cumulative rounds per segment
       }));
 
       document.getElementById('setup-card').classList.add('hidden');
@@ -465,28 +468,34 @@
       }
     }
 
+    function completeSegment(p, segId) {
+      p.segmentLaps[segId]++;
+      p.segmentRoundsTotal[segId] += p.currentSegmentRounds;
+      p.currentSegmentRounds = 1; // Reset rounds for next segment
+    }
+
     function evaluateSegmentProgress() {
       const p = gameState.players[gameState.currentPlayerIndex];
       const turnVal = gameState.darts.reduce((acc, curr) => acc + (curr.val || 0), 0);
 
       // Segment 1: Exactly 25 pts
       if (p.currentSegment === 1 && turnVal === 25) {
-        p.segmentLaps[1]++;
+        completeSegment(p, 1);
         p.currentSegment = 2;
       }
       // Segment 2: Exactly 40 pts
       else if (p.currentSegment === 2 && turnVal === 40) {
-        p.segmentLaps[2]++;
+        completeSegment(p, 2);
         p.currentSegment = 3;
       }
       // Segment 3: 60+ pts
       else if (p.currentSegment === 3 && turnVal >= 60) {
-        p.segmentLaps[3]++;
+        completeSegment(p, 3);
         p.currentSegment = 4;
       }
       // Segment 4: 75+ pts
       else if (p.currentSegment === 4 && turnVal >= 75) {
-        p.segmentLaps[4]++;
+        completeSegment(p, 4);
         p.currentSegment = 5;
         p.seg5Progress = 0;
         p.seg5DartsUsed = 0;
@@ -499,7 +508,7 @@
         const totalDarts = p.seg5DartsUsed + currentTurnSeg5Darts;
 
         if (accum >= 110 && totalDarts <= 6) {
-          p.segmentLaps[5]++;
+          completeSegment(p, 5);
           p.currentSegment = 6;
         }
       }
@@ -511,7 +520,7 @@
           const d3 = gameState.darts[2].color;
 
           if (d1 && d1 !== 'Miss' && d1 === d2 && d2 === d3) {
-            p.segmentLaps[6]++;
+            completeSegment(p, 6);
             p.laps++;
             if (p.laps >= gameState.targetLaps) {
               p.isWinner = true;
@@ -528,6 +537,7 @@
 
     function advanceTurn() {
       const p = gameState.players[gameState.currentPlayerIndex];
+
       if (p.currentSegment === 5 && p.startSegmentThisTurn === 5) {
         p.seg5Progress += gameState.darts.reduce((acc, curr) => acc + (curr.val || 0), 0);
         p.seg5DartsUsed += gameState.darts.length;
@@ -536,6 +546,11 @@
           p.seg5Progress = 0;
           p.seg5DartsUsed = 0;
         }
+      }
+
+      // Increment round counter if player remains on the same segment
+      if (p.currentSegment === p.startSegmentThisTurn) {
+        p.currentSegmentRounds++;
       }
 
       gameState.darts = [];
@@ -632,7 +647,7 @@
       });
       html += `</tr>`;
 
-      // Rows 2-7: Laps Cleared Per Segment
+      // Rows 2-7: Average Rounds Per Segment
       const segments = [
         { id: 1, name: 'Seg 1: Turn (25 pts)' },
         { id: 2, name: 'Seg 2: Straight (40 pts)' },
@@ -643,10 +658,14 @@
       ];
 
       segments.forEach(seg => {
-        html += `<tr><td><strong>${seg.name} Laps Cleared</strong></td>`;
+        html += `<tr><td><strong>${seg.name} Avg Rounds</strong></td>`;
         gameState.players.forEach(p => {
           const winnerClass = p.isWinner ? 'class="winner-col"' : '';
-          html += `<td ${winnerClass}>${p.segmentLaps[seg.id] || 0}</td>`;
+          const lapsCleared = p.segmentLaps[seg.id] || 0;
+          const roundsSpent = p.segmentRoundsTotal[seg.id] || 0;
+          const avgRounds = lapsCleared > 0 ? (roundsSpent / lapsCleared).toFixed(1) : 'N/A';
+
+          html += `<td ${winnerClass}>${avgRounds} <span style="font-size:12px;color:#888;">(${roundsSpent} rds / ${lapsCleared} laps)</span></td>`;
         });
         html += `</tr>`;
       });
