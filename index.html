@@ -156,25 +156,12 @@
       background-color: #cf6679;
       color: #000;
     }
-    .color-red {
-      background-color: #d32f2f;
-      color: #fff;
-    }
-    .color-green {
-      background-color: #388e3c;
-      color: #fff;
-    }
-    .color-white {
-      background-color: #f5f5f5;
-      color: #000;
-    }
-    .color-black {
-      background-color: #212121;
-      color: #fff;
-      border: 1px solid #444;
-    }
-    
-    /* Vertical Scoreboard with aligned Laps & Segments */
+    .color-red { background-color: #d32f2f; color: #fff; }
+    .color-green { background-color: #388e3c; color: #fff; }
+    .color-white { background-color: #f5f5f5; color: #000; }
+    .color-black { background-color: #212121; color: #fff; border: 1px solid #444; }
+
+    /* Scoreboard Tables */
     .scoreboard-table {
       width: 100%;
       border-collapse: collapse;
@@ -197,6 +184,10 @@
       background-color: #2a3a30 !important;
       border-left: 2px solid #03dac6 !important;
       border-right: 2px solid #03dac6 !important;
+    }
+    .winner-col {
+      background-color: #3b3012 !important;
+      border: 2px solid #ffd700 !important;
     }
     .badge-done {
       color: #81c784;
@@ -227,7 +218,6 @@
         </div>
       </div>
       <div class="player-list" id="player-list"></div>
-
       <div class="form-group">
         <label for="target-laps-input">Target Laps:</label>
         <select id="target-laps-input">
@@ -236,7 +226,6 @@
           <option value="3">3 Laps</option>
         </select>
       </div>
-
       <div class="form-group">
         <label for="board-type-input">Board Type:</label>
         <select id="board-type-input">
@@ -244,33 +233,38 @@
           <option value="quad" selected>Quad Board</option>
         </select>
       </div>
-
       <button class="btn-action" onclick="startGame()">Start Game</button>
     </div>
 
     <!-- GAME CARD -->
     <div id="game-card" class="card hidden">
-      <div class="game-status-header">
-        <div>Round: <span id="rt-round-num">1</span></div>
-        <div>Target Laps: <span id="rt-target-laps">2</span></div>
-        <div>Board: <span id="rt-board-type">Quad</span></div>
+      <div id="rt-active-game-area">
+        <div class="game-status-header">
+          <div>Round: <span id="rt-round-num">1</span></div>
+          <div>Target Laps: <span id="rt-target-laps">2</span></div>
+          <div>Board: <span id="rt-board-type">Quad</span></div>
+        </div>
+        <div id="rt-active-banner" class="active-banner">PLAYER 1'S TURN</div>
+        <div class="dart-display">
+          <div id="rt-dart-1" class="dart-slot">-</div>
+          <div id="rt-dart-2" class="dart-slot">-</div>
+          <div id="rt-dart-3" class="dart-slot">-</div>
+          <div style="align-self: center;">Turn Total: <span id="rt-turn-score">0</span></div>
+        </div>
+        <div id="rt-controls" class="controls-grid"></div>
+        <button id="rt-btn-advance" class="btn-action" style="margin-top:15px;" onclick="advanceTurn()" disabled>Advance Turn</button>
+        <h3 style="margin-top:20px;">Race Standings & Segment Alignment</h3>
+        <div id="vertical-scoreboard"></div>
       </div>
 
-      <div id="rt-active-banner" class="active-banner">PLAYER 1'S TURN</div>
-
-      <div class="dart-display">
-        <div id="rt-dart-1" class="dart-slot">-</div>
-        <div id="rt-dart-2" class="dart-slot">-</div>
-        <div id="rt-dart-3" class="dart-slot">-</div>
-        <div style="align-self: center;">Turn Total: <span id="rt-turn-score">0</span></div>
+      <!-- FINAL SCOREBOARD SCREEN -->
+      <div id="rt-game-over" class="hidden">
+        <h2>🏁 Game Over! 🏁</h2>
+        <div id="rt-winner-announcement" class="active-banner"></div>
+        <h3>Final Race Statistics</h3>
+        <div id="final-scoreboard"></div>
+        <button class="btn-action" onclick="location.reload()" style="margin-top:20px;">Play Again</button>
       </div>
-
-      <div id="rt-controls" class="controls-grid"></div>
-
-      <button id="rt-btn-advance" class="btn-action" style="margin-top:15px;" onclick="advanceTurn()" disabled>Advance Turn</button>
-
-      <h3 style="margin-top:20px;">Race Standings & Segment Alignment</h3>
-      <div id="vertical-scoreboard"></div>
     </div>
   </div>
 
@@ -323,21 +317,23 @@
       gameState.currentPlayerIndex = 0;
       gameState.darts = [];
       currentMultiplier = 1;
-      
       gameState.players = playerNames.map(name => ({
         name: name,
         laps: 0,
         currentSegment: 1,
         seg5Progress: 0,
         seg5DartsUsed: 0,
-        startSegmentThisTurn: 1
+        startSegmentThisTurn: 1,
+        isWinner: false,
+        segmentLaps: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 }
       }));
 
       document.getElementById('setup-card').classList.add('hidden');
       document.getElementById('game-card').classList.remove('hidden');
+      document.getElementById('rt-active-game-area').classList.remove('hidden');
+      document.getElementById('rt-game-over').classList.add('hidden');
       document.getElementById('rt-target-laps').innerText = gameState.targetLaps;
       document.getElementById('rt-board-type').innerText = gameState.boardType === 'quad' ? 'Quad' : 'Basic';
-      
       updateUI();
     }
 
@@ -361,7 +357,6 @@
 
       renderControls(p.currentSegment);
       renderVerticalScoreboard();
-
       document.getElementById('rt-btn-advance').disabled = gameState.darts.length === 0;
     }
 
@@ -387,7 +382,6 @@
           { name: 'Black', class: 'color-black' },
           { name: 'Miss', class: '' }
         ];
-
         colors.forEach(c => {
           const btn = document.createElement('button');
           btn.className = `btn-pad ${c.class}`;
@@ -399,7 +393,6 @@
       }
 
       const nums = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25, 0];
-      
       const multDiv = document.createElement('div');
       multDiv.style.gridColumn = '1 / -1';
       multDiv.style.display = 'flex';
@@ -419,7 +412,6 @@
         quadBtn.classList.add('btn-quad');
         multDiv.appendChild(quadBtn);
       }
-
       container.appendChild(multDiv);
 
       nums.forEach(n => {
@@ -445,7 +437,6 @@
 
     function recordNumericDart(baseVal) {
       if (gameState.darts.length >= 3) return;
-
       let mult = currentMultiplier;
       if (baseVal === 25 && mult > 2) mult = 2;
       if (baseVal === 0) mult = 1;
@@ -455,7 +446,6 @@
 
       gameState.darts.push({ val: totalVal, label: label, base: baseVal, mult: mult });
       currentMultiplier = 1;
-
       evaluateSegmentProgress();
       updateUI();
     }
@@ -479,37 +469,41 @@
       const p = gameState.players[gameState.currentPlayerIndex];
       const turnVal = gameState.darts.reduce((acc, curr) => acc + (curr.val || 0), 0);
 
-      // Segment 1: Exactly 25 pts for the turn
+      // Segment 1: Exactly 25 pts
       if (p.currentSegment === 1 && turnVal === 25) {
+        p.segmentLaps[1]++;
         p.currentSegment = 2;
-      } 
-      // Segment 2: 40 pts
+      }
+      // Segment 2: Exactly 40 pts
       else if (p.currentSegment === 2 && turnVal === 40) {
+        p.segmentLaps[2]++;
         p.currentSegment = 3;
-      } 
+      }
       // Segment 3: 60+ pts
       else if (p.currentSegment === 3 && turnVal >= 60) {
+        p.segmentLaps[3]++;
         p.currentSegment = 4;
-      } 
+      }
       // Segment 4: 75+ pts
       else if (p.currentSegment === 4 && turnVal >= 75) {
+        p.segmentLaps[4]++;
         p.currentSegment = 5;
-        p.seg5Progress = 0;   // Initialize Segment 5 explicitly at 0
-        p.seg5DartsUsed = 0;  // Reset dart count for Segment 5
-      } 
+        p.seg5Progress = 0;
+        p.seg5DartsUsed = 0;
+      }
       // Segment 5: 110 in 6 darts
       else if (p.currentSegment === 5) {
         const currentTurnSeg5Darts = p.startSegmentThisTurn === 5 ? gameState.darts.length : 0;
         const currentTurnSeg5Val = p.startSegmentThisTurn === 5 ? turnVal : 0;
-        
         const accum = p.seg5Progress + currentTurnSeg5Val;
         const totalDarts = p.seg5DartsUsed + currentTurnSeg5Darts;
 
         if (accum >= 110 && totalDarts <= 6) {
+          p.segmentLaps[5]++;
           p.currentSegment = 6;
         }
       }
-      // Segment 6: Finish (3 of the same color, not Miss)
+      // Segment 6: Finish (3 matching colors, non-miss)
       else if (p.currentSegment === 6) {
         if (gameState.darts.length === 3) {
           const d1 = gameState.darts[0].color;
@@ -517,12 +511,13 @@
           const d3 = gameState.darts[2].color;
 
           if (d1 && d1 !== 'Miss' && d1 === d2 && d2 === d3) {
+            p.segmentLaps[6]++;
             p.laps++;
             if (p.laps >= gameState.targetLaps) {
-              alert(`🎉 CONGRATULATIONS! ${p.name} HAS WON THE RACE! 🎉`);
+              p.isWinner = true;
+              showGameOverScreen();
             } else {
-              alert(`🏁 ${p.name} completed Lap ${p.laps}! Starting Lap ${p.laps + 1}.`);
-              p.currentSegment = 1; // Loop back to Segment 1 for the next lap
+              p.currentSegment = 1;
               p.seg5Progress = 0;
               p.seg5DartsUsed = 0;
             }
@@ -533,12 +528,10 @@
 
     function advanceTurn() {
       const p = gameState.players[gameState.currentPlayerIndex];
-
       if (p.currentSegment === 5 && p.startSegmentThisTurn === 5) {
         p.seg5Progress += gameState.darts.reduce((acc, curr) => acc + (curr.val || 0), 0);
         p.seg5DartsUsed += gameState.darts.length;
 
-        // Reset back to 0 if 6 darts are reached without accumulating 110 pts
         if (p.seg5DartsUsed >= 6 && p.seg5Progress < 110) {
           p.seg5Progress = 0;
           p.seg5DartsUsed = 0;
@@ -548,7 +541,6 @@
       gameState.darts = [];
       currentMultiplier = 1;
       gameState.currentPlayerIndex++;
-
       if (gameState.currentPlayerIndex >= gameState.players.length) {
         gameState.currentPlayerIndex = 0;
         gameState.currentRound++;
@@ -556,21 +548,18 @@
 
       const nextPlayer = gameState.players[gameState.currentPlayerIndex];
       nextPlayer.startSegmentThisTurn = nextPlayer.currentSegment;
-
       updateUI();
     }
 
     function renderVerticalScoreboard() {
       const container = document.getElementById('vertical-scoreboard');
       let html = `<table class="scoreboard-table"><thead><tr><th>Track Segment</th>`;
-
       gameState.players.forEach((p, idx) => {
         const isActive = idx === gameState.currentPlayerIndex ? 'class="active-player-col"' : '';
         html += `<th ${isActive}>${p.name}</th>`;
       });
       html += `</tr></thead><tbody>`;
 
-      // Summary Rows at Top
       html += `<tr class="summary-row"><td><strong>Laps Completed</strong></td>`;
       gameState.players.forEach((p, idx) => {
         const isActive = idx === gameState.currentPlayerIndex ? 'class="active-player-col"' : '';
@@ -585,7 +574,6 @@
       });
       html += `</tr>`;
 
-      // Segment Rows
       const segments = [
         { id: 1, name: '1: Turn (25 pts)' },
         { id: 2, name: '2: Straight (40 pts)' },
@@ -603,11 +591,62 @@
           if (p.currentSegment > seg.id) {
             status = '<span class="badge-done">✅ Cleared</span>';
           } else if (p.currentSegment === seg.id) {
-            status = seg.id === 5 
-              ? `<span class="badge-active">${p.seg5Progress}/110</span>` 
-              : `<span class="badge-active">🎯 Target</span>`;
+            status = seg.id === 5 ? `<span class="badge-active">${p.seg5Progress}/110</span>` : `<span class="badge-active">🎯 Target</span>`;
           }
           html += `<td ${isActive}>${status}</td>`;
+        });
+        html += `</tr>`;
+      });
+
+      html += `</tbody></table>`;
+      container.innerHTML = html;
+    }
+
+    function showGameOverScreen() {
+      document.getElementById('rt-active-game-area').classList.add('hidden');
+      const winner = gameState.players.find(p => p.isWinner);
+      const gameOverDiv = document.getElementById('rt-game-over');
+      gameOverDiv.classList.remove('hidden');
+      document.getElementById('rt-winner-announcement').innerText = `🏆 ${winner.name.toUpperCase()} WINS THE RACE! 🏆`;
+
+      renderFinalScoreboard();
+    }
+
+    function renderFinalScoreboard() {
+      const container = document.getElementById('final-scoreboard');
+      let html = `<table class="scoreboard-table"><thead><tr><th>Stat / Segment</th>`;
+
+      // Header row: Player Columns
+      gameState.players.forEach(p => {
+        const flag = p.isWinner ? ' 🏁' : '';
+        const winnerClass = p.isWinner ? 'class="winner-col"' : '';
+        html += `<th ${winnerClass}>${p.name}${flag}</th>`;
+      });
+      html += `</tr></thead><tbody>`;
+
+      // Row 1: Total Completed Laps
+      html += `<tr class="summary-row"><td><strong>Total Laps Completed</strong></td>`;
+      gameState.players.forEach(p => {
+        const winnerClass = p.isWinner ? 'class="winner-col"' : '';
+        html += `<td ${winnerClass}><strong>${p.laps} / ${gameState.targetLaps}</strong></td>`;
+      });
+      html += `</tr>`;
+
+      // Rows 2-7: Laps Cleared Per Segment
+      const segments = [
+        { id: 1, name: 'Seg 1: Turn (25 pts)' },
+        { id: 2, name: 'Seg 2: Straight (40 pts)' },
+        { id: 3, name: 'Seg 3: Turn (60+ pts)' },
+        { id: 4, name: 'Seg 4: Straight (75+ pts)' },
+        { id: 5, name: 'Seg 5: Pit (110 in 6)' },
+        { id: 6, name: 'Seg 6: Finish (Colors)' }
+      ];
+
+      segments.forEach(seg => {
+        html += `<tr><td><strong>${seg.name} Laps Cleared</strong></td>`;
+        gameState.players.forEach(p => {
+          const winnerClass = p.isWinner ? 'class="winner-col"' : '';
+          html += `<td ${winnerClass}>${p.segmentLaps[seg.id] || 0}</td>`;
         });
         html += `</tr>`;
       });
